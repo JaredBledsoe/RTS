@@ -1,0 +1,190 @@
+<html>
+<head>
+<style>
+  body {
+    margin: 0;
+  }
+  canvas {
+/*    background-color: blue;
+*/  }
+</style>
+</head>
+<body>
+  <canvas></canvas>
+  
+  <script>
+
+
+
+
+
+var HOST = location.origin.replace(/^http/, 'ws');
+
+//Online
+// var ws = new WebSocket(HOST);
+
+//Local
+var ws = new WebSocket('ws://localhost:3000');
+
+var canvas = document.getElementsByTagName('canvas')[0];
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+var ctx = canvas.getContext('2d');
+var keyStates = [];
+
+var grids = [];
+var player;
+
+window.onunload = function () {
+ ws.send(JSON.stringify({
+     type: 'close',
+     id: player.id
+    }));
+};
+
+
+
+
+
+ws.onmessage = function(e) {
+  var message = JSON.parse(e.data);
+
+  if (message.type == 'gameUpdate') {
+    player.control();
+    player.x = message.players[player.id].x;
+    player.y = message.players[player.id].y;
+
+    if (player.updated == true) {
+      player.updated = false;
+      ws.send(JSON.stringify({
+        type: 'playerUpdate',
+        info: player
+      }));
+    }
+
+    player.camera(player.gridId, message.players[player.id].gridId);
+    player.gridId = message.players[player.id].gridId;
+
+    if (message.grids.length > 0) {
+      for (var i=0; i<message.grids.length; i++) {
+        //Grid changed
+        draw(message.grids[i].x, message.grids[i].y, message.grids[i].owner);
+      }
+    }
+  }
+
+  else if (message.type == 'initPlayer') {
+    ctx.translate(canvas.width/2, canvas.height/2);
+    player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
+    grids = message.grids;console.log(grids);0
+    for (var i=0; i<grids.length; i++) {
+      draw(grids[i].x, grids[i].y, grids[i].owner)
+    }
+  }
+} 
+
+
+
+
+
+function Players(x, y, id, moves, gridId) {
+  this.x = x;
+  this.y = y;
+  this.id = id;
+  this.moves = moves;
+  this.gridId = gridId;
+  updated = false;
+
+  this.control = function() {
+    if (keyStates[38] || keyStates[87]) {
+      this.moves[0] = true;
+    }
+    else {
+      this.moves[0] = false;
+    }
+    if (keyStates[39] || keyStates[68]) {
+      this.moves[1] = true;
+    }
+    else {
+      this.moves[1] = false;
+    }
+    if (keyStates[40] || keyStates[83]) {
+      this.moves[2] = true;
+    }
+    else {
+      this.moves[2] = false;
+    }
+    if (keyStates[37] || keyStates[65]) {
+      this.moves[3] = true;
+    }
+    else {
+      this.moves[3] = false;
+    }
+  };
+
+  this.camera = function(oldId, newId) {
+    ctx.clearRect(player.x-canvas.width/1.5, player.y-canvas.width/1.5, player.x+canvas.width*1.5, player.y+canvas.height*1.5);
+    if (newId == oldId-1) {
+      ctx.translate(0, 50);
+    }
+    else if (newId == oldId+1) {
+      ctx.translate(0, -50);
+    }
+    else if (newId == oldId+100) {
+      ctx.translate(-50, 0);
+    }
+    else if (newId == oldId-100) {
+      ctx.translate(50, 0);
+    }
+  };
+};
+
+
+
+
+
+function draw(x, y, owner) {
+  ctx.beginPath();
+  ctx.rect(x, y, 50, 50);
+  if (owner === player.id) {
+    ctx.fillStyle = 'red';
+    ctx.fill();
+  }
+  else if (owner !== player.id && typeof owner == 'number') {
+    ctx.fillStyle = 'blue';
+    ctx.fill();
+  }
+  else if (owner === false) {
+    ctx.fillStyle = 'white';
+    ctx.fill();
+  }
+  else if (owner === true) {
+    ctx.fillStyle = 'yellow';
+    ctx.fill();
+  }
+  ctx.stroke();
+}
+
+
+
+
+
+window.addEventListener('keydown', function(e) {
+  keyStates[e.keyCode] = true;
+  player.updated = true;
+  console.log(e.keyCode);
+
+
+});
+window.addEventListener('keyup', function(e) {
+  keyStates[e.keyCode] = false;
+  player.updated = true;
+});
+
+
+
+
+
+</script>
+</body>
+</html>

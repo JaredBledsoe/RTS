@@ -1,0 +1,17 @@
+
+{
+  "name": "ws-game",
+  "version": "0.0.1",
+  "description": "A basic networked multiplayer game example/template, with lots of explanations.",
+  "dependencies": {
+    "express": "4.15.5",
+    "ws": "1.1.0"
+  },
+  "engines": {
+    "node": "^6.9.1",
+    "npm": "5.6.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
