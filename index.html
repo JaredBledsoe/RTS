@@ -21,10 +21,10 @@
 var HOST = location.origin.replace(/^http/, 'ws');
 
 //Online
-// var ws = new WebSocket(HOST);
+var ws = new WebSocket(HOST);
 
 //Local
-var ws = new WebSocket('ws://localhost:3000');
+//var ws = new WebSocket('ws://localhost:3000');
 
 var canvas = document.getElementsByTagName('canvas')[0];
 canvas.width = window.innerWidth;
