@@ -7,12 +7,19 @@
   canvas {
 /*    background-color: blue;
 */  }
+  img {
+    position: absolute;
+    display: none;
+  }
 </style>
 </head>
 <body>
-  <canvas></canvas>
+<img id="arrow" src="https://d30y9cdsu7xlg0.cloudfront.net/png/34-200.png">
+<img id="head" src="https://minotar.net/helm/80.png">
+
+<canvas></canvas>
   
-  <script>
+<script>
 
 
 
@@ -21,10 +28,10 @@
 var HOST = location.origin.replace(/^http/, 'ws');
 
 //Online
-var ws = new WebSocket(HOST);
+// var ws = new WebSocket(HOST);
 
 //Local
-//var ws = new WebSocket('ws://localhost:3000');
+var ws = new WebSocket('ws://localhost:3000');
 
 var canvas = document.getElementsByTagName('canvas')[0];
 canvas.width = window.innerWidth;
@@ -34,6 +41,9 @@ var keyStates = [];
 
 var grids = [];
 var player;
+var arrow = document.getElementById('arrow');
+var head = document.getElementById('head');
+
 
 window.onunload = function () {
  ws.send(JSON.stringify({
@@ -51,11 +61,13 @@ ws.onmessage = function(e) {
 
   if (message.type == 'gameUpdate') {
     player.control();
-        //Move viewport to center player
+    //Move viewport to center player
     player.camera(player.gridId, message.player.gridId);
     player.gridId = message.player.gridId;
     player.x = message.player.x;
     player.y = message.player.y;
+    grids = message.grids;
+    console.log(grids);
 
     if (player.updated == true) {
       player.updated = false;
@@ -65,13 +77,8 @@ ws.onmessage = function(e) {
       }));
     }
 
-    //What grids to draw
-    if (message.grids.length > 0) {
-      for (var i=0; i<message.grids.length; i++) {
-        //Grid changed
-        draw(message.grids[i].x, message.grids[i].y, message.grids[i].owner);
-      }
-    }
+    //Executes all drawing
+    player.camera();
   }
 
 
@@ -79,10 +86,6 @@ ws.onmessage = function(e) {
   else if (message.type == 'initPlayer') {
     ctx.translate(canvas.width/2, canvas.height/2);
     player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
-    grids = message.grids;
-    for (var i=0; i<grids.length; i++) {
-      draw(grids[i].x, grids[i].y, grids[i].owner)
-    }
   }
 } 
 
@@ -96,7 +99,7 @@ function Players(x, y, id, moves, gridId) {
   this.id = id;
   this.moves = moves;
   this.gridId = gridId;
-  updated = false;
+  this.updated = false;
 
   this.control = function() {
     if (keyStates[38] || keyStates[87]) {
@@ -140,6 +143,10 @@ function Players(x, y, id, moves, gridId) {
     else if (newId == oldId-100) {
       ctx.translate(50, 0);
     }
+
+    for (var i=0; i<grids.length; i++) {
+      draw(grids[i].x, grids[i].y, grids[i].owner, grids[i].gridId, grids[i].rgb);
+    }
   };
 };
 
@@ -147,22 +154,37 @@ function Players(x, y, id, moves, gridId) {
 
 
 
-function draw(x, y, owner) {
+function draw(x, y, owner, gridId, rgb) {
   ctx.beginPath();
   ctx.rect(x, y, 50, 50);
-  if (owner === player.id) {
-    ctx.fillStyle = 'red';
+  if (gridId === player.gridId) {
+    ctx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' +  rgb[2] + ', .5)';
+    ctx.fill();
+    ctx.drawImage(head, x+7, y+7, 36, 36);
+  }
+  else if (owner === player.id) {
+    ctx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' +  rgb[2] + ', .5)';
     ctx.fill();
   }
   else if (owner !== player.id && typeof owner == 'number') {
-    ctx.fillStyle = 'blue';
+    ctx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' +  rgb[2] + ', .5)';
     ctx.fill();
   }
   else if (owner === true) {
-    ctx.fillStyle = 'yellow';
-    ctx.fill();
+    // ctx.drawImage(arrow, x, y, 50, 50);
+    var alpha = 0;
+    var claim = setInterval(function() {
+      alpha += .1;
+      ctx.fillStyle = 'rgba(255, 255, 102,' + alpha + ')';
+      ctx.fill();
+
+      if (alpha > 1) {
+        clearInterval(claim);
+      }
+    },10);
   }
-  ctx.stroke();
+
+  // ctx.stroke();
 }
 
 

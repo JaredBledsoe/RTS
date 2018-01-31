@@ -90,7 +90,7 @@ wss.on('connection', function(ws) {
 //Send grids to players
 setInterval(function() {
 	for (var i=0; i<players.length; i++) {
-        if (clients[i].readyState != clients[0].OPEN){
+        if (clients[i].readyState != clients[0].OPEN) {
         	console.log("asdkasdjklasdjklsadljksadljkaslkd");
         }
         else {
@@ -101,9 +101,14 @@ setInterval(function() {
 				grids: updatedGrids
 			}));
 		}
-		// if (i >= players.length-1) {
-		// 	updatedGrids = [];
-		// }
+	}
+	for (var i=0; i<updatedGrids.length;) {
+		if (updatedGrids[i].owner === false) {
+			updatedGrids.splice(i, 1);
+		}
+		else {
+			i++;
+		}
 	}
 },30);
 
@@ -118,6 +123,7 @@ function Player() {
 	this.gridId = 102;
 	this.moves = [false, false, false, false];
 	this.contesting = false;
+	this.rgb = [Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)];
 };
 Player.prototype.update = function() {
 	var index;
@@ -156,21 +162,33 @@ function Grid(x, y) {
 	this.x = x;
 	this.y = y;
 	this.gridId = this.y/50 + (this.x/50 * 100);
+	this.rgb;
 }
 Grid.prototype.own = function(index, id) {	
-	this.owner = true;
-	players[index].contesting = true;
-	updatedGrids.push(this);
+	if (this.owner !== id) {
+		this.owner = true;
 
+		players[index].contesting = true;
+		updatedGrids.push(this);
 
-	setTimeout(() => {
-		players[index].contesting = false;
-
-		this.owner = id;
-		players[index].gridId = this.gridId;
-		players[index].x = this.x;
-		players[index].y = this.y;
-	},100);
+		setTimeout(() => {
+			if (players[index]) {
+				players[index].contesting = false;
+				this.owner = id;
+				this.rgb = players[index].rgb;
+				players[index].gridId = this.gridId;
+				players[index].x = this.x;
+				players[index].y = this.y;
+			}
+		},500);
+	}
+	else {
+		setTimeout(() => {
+			players[index].gridId = this.gridId;
+			players[index].x = this.x;
+			players[index].y = this.y;
+		},100);
+	}
 }
 
 
