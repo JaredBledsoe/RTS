@@ -29,28 +29,53 @@ wss.on('connection', (ws) => {
 
 
 wss.on('connection', function(ws) {
-	clients.push(ws);
 
-	players.push(new Player());
+	function close() {
+		var currentId = clients.indexOf(ws);
+		for (var i=0; i<updatedGrids.length;) {
+			if (updatedGrids[i].owner === players[currentId].id) {
+				updatedGrids[i].owner = false;
+				updatedGrids.splice(i, 1);
+			}
+			else {
+				i++;
+			}
+		}
+		clients[currentId].close();
+		clients.splice(currentId, 1);
+		players.splice(currentId, 1);
+	}
+
+    ws.on('close', function() {
+    	close();
+    });
+
+    ws.on('error', function() {
+    	close();
+    });
 	
 	ws.on('message', function(e) {
 		var message = JSON.parse(e);
 
 		//Player moved
 		if (message.type == 'playerUpdate') {
-			if (players[message.info.id]) {
-				players[message.info.id].moves = message.info.moves;
+			var currentId;
+			for (var i=0; i<players.length; i++) {
+				if (players[i].id == message.info.id) {
+					currentId = i;
+					break;
+				}
 			}
-		}
-
-		//Player left
-		if (message.type == 'close') {
-			clients[message.id].close();
-			clients.splice(message.id, 1);
-			players.splice(message.id, 1);
+			if (players[currentId]) {
+				players[currentId].moves = message.info.moves;
+			}
 		}
 	});
 
+	clients.push(ws);
+	players.push(new Player());
+
+	//Send to new player
 	ws.send(JSON.stringify({
 		type: 'initPlayer',
 		player: players[players.length-1],
@@ -62,20 +87,23 @@ wss.on('connection', function(ws) {
 
 
 
-//Run game physics
+//Send grids to players
 setInterval(function() {
 	for (var i=0; i<players.length; i++) {
-		if (clients[i]) {
+        if (clients[i].readyState != clients[0].OPEN){
+        	console.log("asdkasdjklasdjklsadljksadljkaslkd");
+        }
+        else {
 			players[i].update();
 			clients[i].send(JSON.stringify({
 				type: 'gameUpdate',
-				players: players,
+				player: players[i],
 				grids: updatedGrids
 			}));
 		}
-		if (i >= players.length) {
-			updatedGrids = [];
-		}
+		// if (i >= players.length-1) {
+		// 	updatedGrids = [];
+		// }
 	}
 },30);
 
@@ -86,26 +114,33 @@ setInterval(function() {
 function Player() {
 	this.x = 50;
 	this.y = 50;
-	this.id = clients.length-1;
+	this.id = Math.random();
 	this.gridId = 102;
 	this.moves = [false, false, false, false];
 	this.contesting = false;
 };
 Player.prototype.update = function() {
+	var index;
+	for (var i=0; i<players.length; i++) {
+		if (players[i].id == this.id) {
+			index = i;
+			break;
+		}
+	}
 
 	//Movement
 	// var currentGridId = this.y/50 + (this.x/50 * 100);
 	if (this.moves[0] && this.contesting===false && (this.gridId-1)%100!=0) {
-		grids[this.gridId-1].own(this.id);
+		grids[this.gridId-1].own(index, this.id);
 	}
 	else if (this.moves[1] && this.contesting===false && (this.gridId+100)<9900) {
-		grids[this.gridId+100].own(this.id, this.moves);
+		grids[this.gridId+100].own(index, this.id);
 	}
 	else if (this.moves[2] && this.contesting===false && (this.gridId+1)%99!=0) {
-		grids[this.gridId+1].own(this.id, this.moves);
+		grids[this.gridId+1].own(index, this.id);
 	}
 	else if (this.moves[3] && this.contesting===false && (this.gridId-100)>99) {
-		grids[this.gridId-100].own(this.id, this.moves);
+		grids[this.gridId-100].own(index, this.id);
 	}
 	else if (this.contesting===true) {
 
@@ -122,24 +157,22 @@ function Grid(x, y) {
 	this.y = y;
 	this.gridId = this.y/50 + (this.x/50 * 100);
 }
-Grid.prototype.own = function(id) {	
+Grid.prototype.own = function(index, id) {	
 	this.owner = true;
-	players[id].contesting = true;
+	players[index].contesting = true;
 	updatedGrids.push(this);
 
+
 	setTimeout(() => {
-		players[id].contesting = false;
-		updatedGrids.push(this);
+		players[index].contesting = false;
 
-		console.log(this.gridId + " " + this.y);
 		this.owner = id;
-
-		players[id].gridId = this.gridId;
-		players[id].x = this.x;
-		players[id].y = this.y;
-
+		players[index].gridId = this.gridId;
+		players[index].x = this.x;
+		players[index].y = this.y;
 	},100);
 }
+
 
 
 

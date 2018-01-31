@@ -21,10 +21,10 @@
 var HOST = location.origin.replace(/^http/, 'ws');
 
 //Online
-var ws = new WebSocket(HOST);
+// var ws = new WebSocket(HOST);
 
 //Local
-//var ws = new WebSocket('ws://localhost:3000');
+var ws = new WebSocket('ws://localhost:3000');
 
 var canvas = document.getElementsByTagName('canvas')[0];
 canvas.width = window.innerWidth;
@@ -51,8 +51,11 @@ ws.onmessage = function(e) {
 
   if (message.type == 'gameUpdate') {
     player.control();
-    player.x = message.players[player.id].x;
-    player.y = message.players[player.id].y;
+        //Move viewport to center player
+    player.camera(player.gridId, message.player.gridId);
+    player.gridId = message.player.gridId;
+    player.x = message.player.x;
+    player.y = message.player.y;
 
     if (player.updated == true) {
       player.updated = false;
@@ -62,9 +65,7 @@ ws.onmessage = function(e) {
       }));
     }
 
-    player.camera(player.gridId, message.players[player.id].gridId);
-    player.gridId = message.players[player.id].gridId;
-
+    //What grids to draw
     if (message.grids.length > 0) {
       for (var i=0; i<message.grids.length; i++) {
         //Grid changed
@@ -73,10 +74,12 @@ ws.onmessage = function(e) {
     }
   }
 
+
+  //Player just joined
   else if (message.type == 'initPlayer') {
     ctx.translate(canvas.width/2, canvas.height/2);
     player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
-    grids = message.grids;console.log(grids);0
+    grids = message.grids;
     for (var i=0; i<grids.length; i++) {
       draw(grids[i].x, grids[i].y, grids[i].owner)
     }
@@ -123,7 +126,8 @@ function Players(x, y, id, moves, gridId) {
   };
 
   this.camera = function(oldId, newId) {
-    ctx.clearRect(player.x-canvas.width/1.5, player.y-canvas.width/1.5, player.x+canvas.width*1.5, player.y+canvas.height*1.5);
+    ctx.clearRect(player.x-canvas.width/1.5, player.y-canvas.width/1.5, player.x+canvas.width*2, player.y+canvas.height*2);
+
     if (newId == oldId-1) {
       ctx.translate(0, 50);
     }
@@ -154,10 +158,6 @@ function draw(x, y, owner) {
     ctx.fillStyle = 'blue';
     ctx.fill();
   }
-  else if (owner === false) {
-    ctx.fillStyle = 'white';
-    ctx.fill();
-  }
   else if (owner === true) {
     ctx.fillStyle = 'yellow';
     ctx.fill();
@@ -172,9 +172,6 @@ function draw(x, y, owner) {
 window.addEventListener('keydown', function(e) {
   keyStates[e.keyCode] = true;
   player.updated = true;
-  console.log(e.keyCode);
-
-
 });
 window.addEventListener('keyup', function(e) {
   keyStates[e.keyCode] = false;
