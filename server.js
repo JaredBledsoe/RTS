@@ -209,7 +209,7 @@ Grid.prototype.own = function(index, id) {
 				players[index].y = this.y;
 				players[index].contesting = false;
 			}
-		},100);
+		},300);
 	}
 	else if (this.owner === id) {
 		setTimeout(() => {
