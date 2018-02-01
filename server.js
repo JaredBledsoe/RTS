@@ -11,7 +11,7 @@ const wss = new SocketServer({ server });
 var clients = [];
 var players = [];
 var grids = [];
-var updatedGrids = [];
+// var updatedGrids = [];
 
 
 //Init grids
@@ -32,13 +32,9 @@ wss.on('connection', function(ws) {
 
 	function close() {
 		var currentId = clients.indexOf(ws);
-		for (var i=0; i<updatedGrids.length;) {
-			if (updatedGrids[i].owner === players[currentId].id) {
-				updatedGrids[i].owner = false;
-				updatedGrids.splice(i, 1);
-			}
-			else {
-				i++;
+		for (var i=0; i<grids.length; i++) {
+			if (grids[i].owner === players[currentId].id) {
+				grids[i].owner = false;
 			}
 		}
 		clients[currentId].close();
@@ -91,25 +87,27 @@ wss.on('connection', function(ws) {
 setInterval(function() {
 	for (var i=0; i<players.length; i++) {
         if (clients[i].readyState != clients[0].OPEN) {
-        	console.log("asdkasdjklasdjklsadljksadljkaslkd");
+        	console.log("error asdkasdjklasdjklsadljksadljkaslkd");
         }
         else {
 			players[i].update();
+			
 			clients[i].send(JSON.stringify({
 				type: 'gameUpdate',
 				player: players[i],
-				grids: updatedGrids
+				grids: players[i].gridsInView
 			}));
 		}
 	}
-	for (var i=0; i<updatedGrids.length;) {
-		if (updatedGrids[i].owner === false) {
-			updatedGrids.splice(i, 1);
-		}
-		else {
-			i++;
-		}
-	}
+	// for (var i=0; i<updatedGrids.length;) {
+	// 	if (updatedGrids[i].owner === false) {
+	// 		updatedGrids[i].rgb = [];
+	// 		updatedGrids.splice(i, 1);
+	// 	}
+	// 	else {
+	// 		i++;
+	// 	}
+	// }
 },30);
 
 
@@ -121,9 +119,14 @@ function Player() {
 	this.y = 50;
 	this.id = Math.random();
 	this.gridId = 102;
+	this.lastGridId = 0;
 	this.moves = [false, false, false, false];
 	this.contesting = false;
 	this.rgb = [Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)];
+
+	this.gridsInView = [];
+	this.viewStartGrid = 0;
+	this.viewStartGrid = 2030;
 };
 Player.prototype.update = function() {
 	var index;
@@ -136,21 +139,40 @@ Player.prototype.update = function() {
 
 	//Movement
 	// var currentGridId = this.y/50 + (this.x/50 * 100);
-	if (this.moves[0] && this.contesting===false && (this.gridId-1)%100!=0) {
-		grids[this.gridId-1].own(index, this.id);
+	if (this.contesting===false) {
+		if (this.moves[0] && this.y>0) {
+			grids[this.gridId-1].own(index, this.id);
+		}
+		else if (this.moves[1] && this.x<4950) {
+			grids[this.gridId+100].own(index, this.id);
+		}
+		else if (this.moves[2] && this.y<4950) {
+			grids[this.gridId+1].own(index, this.id);
+		}
+		else if (this.moves[3] && this.x>0) {
+			grids[this.gridId-100].own(index, this.id);
+		}
 	}
-	else if (this.moves[1] && this.contesting===false && (this.gridId+100)<9900) {
-		grids[this.gridId+100].own(index, this.id);
-	}
-	else if (this.moves[2] && this.contesting===false && (this.gridId+1)%99!=0) {
-		grids[this.gridId+1].own(index, this.id);
-	}
-	else if (this.moves[3] && this.contesting===false && (this.gridId-100)>99) {
-		grids[this.gridId-100].own(index, this.id);
-	}
-	else if (this.contesting===true) {
 
+	//Which blocks to show, based on position
+	this.viewStartGrid = this.gridId-1308;
+
+	this.viewEndGrid = this.gridId+1208;
+
+	this.gridsInView = [];
+
+	for (var i=this.viewStartGrid; i<=this.viewEndGrid; i++) {
+		if (grids[i]) {
+			if (grids[i].y > this.y-450 && grids[i].y < this.y+350) {
+				this.gridsInView.push(grids[i]);
+		}
 	}
+		// this.gridsInView = 
+		// this.gridsInView.concat(
+		// 	grids.slice(i+this.gridId-7, i+this.gridId+8)
+		// );	
+	}
+	// console.log(this.viewStartGrid + " " + this.gridId);
 };
 
 
@@ -163,48 +185,42 @@ function Grid(x, y) {
 	this.y = y;
 	this.gridId = this.y/50 + (this.x/50 * 100);
 	this.rgb;
+	this.occupied = false;
 }
 Grid.prototype.own = function(index, id) {	
+	players[index].contesting = true;
+
 	if (this.owner !== id) {
 		this.owner = true;
-
-		players[index].contesting = true;
-		updatedGrids.push(this);
+		// updatedGrids.push(this);
 
 		setTimeout(() => {
 			if (players[index]) {
-				players[index].contesting = false;
 				this.owner = id;
 				this.rgb = players[index].rgb;
+				this.occupied = true;
+
+
+				grids[players[index].lastGridId].occupied = false;
+				players[index].lastGridId = this.gridId;				
+
 				players[index].gridId = this.gridId;
 				players[index].x = this.x;
 				players[index].y = this.y;
+				players[index].contesting = false;
 			}
-		},500);
+		},100);
 	}
-	else {
+	else if (this.owner === id) {
 		setTimeout(() => {
+			this.occupied = true;
+			grids[players[index].lastGridId].occupied = false;
+			players[index].lastGridId = this.gridId;				
+
 			players[index].gridId = this.gridId;
 			players[index].x = this.x;
 			players[index].y = this.y;
+			players[index].contesting = false;
 		},100);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

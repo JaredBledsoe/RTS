@@ -4,9 +4,6 @@
   body {
     margin: 0;
   }
-  canvas {
-/*    background-color: blue;
-*/  }
   img {
     position: absolute;
     display: none;
@@ -31,11 +28,17 @@ var HOST = location.origin.replace(/^http/, 'ws');
 var ws = new WebSocket(HOST);
 
 //Local
-//var ws = new WebSocket('ws://localhost:3000');
+//ws = new WebSocket('ws://localhost:3000');
 
 var canvas = document.getElementsByTagName('canvas')[0];
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
+window.addEventListener("resize", function() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;  
+});
+
 var ctx = canvas.getContext('2d');
 var keyStates = [];
 
@@ -58,7 +61,6 @@ window.onunload = function () {
 
 ws.onmessage = function(e) {
   var message = JSON.parse(e.data);
-
   if (message.type == 'gameUpdate') {
     player.control();
     //Move viewport to center player
@@ -66,8 +68,9 @@ ws.onmessage = function(e) {
     player.gridId = message.player.gridId;
     player.x = message.player.x;
     player.y = message.player.y;
+    
     grids = message.grids;
-    console.log(grids);
+    console.log(grids.length);
 
     if (player.updated == true) {
       player.updated = false;
@@ -130,22 +133,29 @@ function Players(x, y, id, moves, gridId) {
 
   this.camera = function(oldId, newId) {
     ctx.clearRect(player.x-canvas.width/1.5, player.y-canvas.width/1.5, player.x+canvas.width*2, player.y+canvas.height*2);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.translate(-player.x+canvas.width/2, -player.y+canvas.height/2);
 
-    if (newId == oldId-1) {
-      ctx.translate(0, 50);
-    }
-    else if (newId == oldId+1) {
-      ctx.translate(0, -50);
-    }
-    else if (newId == oldId+100) {
-      ctx.translate(-50, 0);
-    }
-    else if (newId == oldId-100) {
-      ctx.translate(50, 0);
-    }
+
+    // if (newId == oldId-1) {
+    //   console.log("UP");
+    //   ctx.translate(player.x, player.y);
+    // }
+    // else if (newId == oldId+1) {
+    //   console.log("DOWN");
+    //   ctx.translate(player.x, player.y);
+    // }
+    // else if (newId == oldId+100) {
+    //   console.log("RIGHT");
+    //   ctx.translate(player.x, player.y);
+    // }
+    // else if (newId == oldId-100) {
+    //   console.log("LEFT");
+    //   ctx.translate(player.x, player.y);
+    // }
 
     for (var i=0; i<grids.length; i++) {
-      draw(grids[i].x, grids[i].y, grids[i].owner, grids[i].gridId, grids[i].rgb);
+      draw(i);
     }
   };
 };
@@ -154,37 +164,19 @@ function Players(x, y, id, moves, gridId) {
 
 
 
-function draw(x, y, owner, gridId, rgb) {
+function draw(index) {
   ctx.beginPath();
-  ctx.rect(x, y, 50, 50);
-  if (gridId === player.gridId) {
-    ctx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' +  rgb[2] + ', .5)';
+  ctx.rect(grids[index].x, grids[index].y, 50, 50);
+  if (grids[index].occupied === true) {
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .5)';
     ctx.fill();
-    ctx.drawImage(head, x+7, y+7, 36, 36);
+    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
   }
-  else if (owner === player.id) {
-    ctx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' +  rgb[2] + ', .5)';
-    ctx.fill();
-  }
-  else if (owner !== player.id && typeof owner == 'number') {
-    ctx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' +  rgb[2] + ', .5)';
+  else if (typeof grids[index].owner === 'number' ) {
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .5)';
     ctx.fill();
   }
-  else if (owner === true) {
-    // ctx.drawImage(arrow, x, y, 50, 50);
-    var alpha = 0;
-    var claim = setInterval(function() {
-      alpha += .1;
-      ctx.fillStyle = 'rgba(255, 255, 102,' + alpha + ')';
-      ctx.fill();
-
-      if (alpha > 1) {
-        clearInterval(claim);
-      }
-    },10);
-  }
-
-  // ctx.stroke();
+  ctx.stroke();
 }
 
 
