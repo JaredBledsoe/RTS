@@ -115,10 +115,10 @@ setInterval(function() {
 
 
 function Player() {
-	this.x = 50;
-	this.y = 50;
+	this.x = 300;
+	this.y = 150;
 	this.id = Math.random();
-	this.gridId = 102;
+	this.gridId = 402;
 	this.lastGridId = 0;
 	this.moves = [false, false, false, false];
 	this.contesting = false;
@@ -186,6 +186,7 @@ function Grid(x, y) {
 	this.gridId = this.y/50 + (this.x/50 * 100);
 	this.rgb;
 	this.occupied = false;
+	this.rock = Math.floor((Math.random()*10)+1);
 }
 Grid.prototype.own = function(index, id) {	
 	players[index].contesting = true;
@@ -209,7 +210,7 @@ Grid.prototype.own = function(index, id) {
 				players[index].y = this.y;
 				players[index].contesting = false;
 			}
-		},300);
+		},100);
 	}
 	else if (this.owner === id) {
 		setTimeout(() => {

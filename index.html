@@ -8,11 +8,19 @@
     position: absolute;
     display: none;
   }
+  canvas {
+    background-image: url('http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kXMzpPrcI/AAAAAAAAAbY/UrjCymSWtiU/s1600/461223182.jpg');
+  }
 </style>
 </head>
 <body>
 <img id="arrow" src="https://d30y9cdsu7xlg0.cloudfront.net/png/34-200.png">
 <img id="head" src="https://minotar.net/helm/80.png">
+<img class="rock" src={require("images/1.png")}>
+<!-- <img class="rock" src="images/2.png">
+<img class="rock" src="images/3.png">
+<img class="rock" src="images/4.png">
+ -->
 
 <canvas></canvas>
   
@@ -46,6 +54,16 @@ var grids = [];
 var player;
 var arrow = document.getElementById('arrow');
 var head = document.getElementById('head');
+
+var rock1 = new Image();
+rock1.src = 'http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg';
+var rock2 = new Image();
+rock2.src = 'http://1.bp.blogspot.com/_Ql_VVzn3j9g/R9kVejpPrXI/AAAAAAAAAa0/esIxiPs5drU/s1600/461223178.jpg';
+var rock3 = new Image();
+rock3.src = 'http://4.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdTpPrVI/AAAAAAAAAak/Dih8pIvjCh4/s1600/461223176.jpg';
+var rock4 = new Image();
+rock4.src = 'http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg';
+
 
 
 window.onunload = function () {
@@ -168,15 +186,27 @@ function draw(index) {
   ctx.beginPath();
   ctx.rect(grids[index].x, grids[index].y, 50, 50);
   if (grids[index].occupied === true) {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .5)';
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
     ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
   }
   else if (typeof grids[index].owner === 'number' ) {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .5)';
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
   }
-  ctx.stroke();
+  else if (grids[index].rock <= 4) {
+    ctx.drawImage(rock1, grids[index].x, grids[index].y, 50, 50);
+  }
+  else if (grids[index].rock <= 7) {
+    ctx.drawImage(rock2, grids[index].x, grids[index].y, 50, 50);
+  }
+  else if (grids[index].rock <= 9) {
+    ctx.drawImage(rock3, grids[index].x, grids[index].y, 50, 50);
+  }
+  else if (grids[index].rock <= 10) {
+    ctx.drawImage(rock4, grids[index].x, grids[index].y, 50, 50);
+  }
+
 }
 
 
