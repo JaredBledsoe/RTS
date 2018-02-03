@@ -34,7 +34,7 @@ wss.on('connection', function(ws) {
 		var currentId = clients.indexOf(ws);
 		for (var i=0; i<grids.length; i++) {
 			if (grids[i].owner === players[currentId].id) {
-				grids[i].owner = false;
+				grids[i].reset();
 			}
 		}
 		clients[currentId].close();
@@ -99,15 +99,6 @@ setInterval(function() {
 			}));
 		}
 	}
-	// for (var i=0; i<updatedGrids.length;) {
-	// 	if (updatedGrids[i].owner === false) {
-	// 		updatedGrids[i].rgb = [];
-	// 		updatedGrids.splice(i, 1);
-	// 	}
-	// 	else {
-	// 		i++;
-	// 	}
-	// }
 },30);
 
 
@@ -165,14 +156,9 @@ Player.prototype.update = function() {
 		if (grids[i]) {
 			if (grids[i].y > this.y-450 && grids[i].y < this.y+350) {
 				this.gridsInView.push(grids[i]);
+			}
 		}
 	}
-		// this.gridsInView = 
-		// this.gridsInView.concat(
-		// 	grids.slice(i+this.gridId-7, i+this.gridId+8)
-		// );	
-	}
-	// console.log(this.viewStartGrid + " " + this.gridId);
 };
 
 
@@ -187,20 +173,43 @@ function Grid(x, y) {
 	this.rgb;
 	this.occupied = false;
 	this.rock = Math.floor((Math.random()*10)+1);
+	this.delay;
+	this.cracks = 0;
+
+	if (this.rock <= 4) {
+		this.delay = 300;
+	}
+	else if (this.rock <= 7) {
+		this.delay = 600;
+	}
+	else if (this.rock <= 9) {
+		this.delay = 900;
+	}
+	else if (this.rock <= 10) {
+		this.delay = 1100;
+	}
 }
 Grid.prototype.own = function(index, id) {	
 	players[index].contesting = true;
 
 	if (this.owner !== id) {
 		this.owner = true;
-		// updatedGrids.push(this);
+
+	setTimeout(() => {
+		this.cracks = 1;
+	},this.delay*.33);
+
+	setTimeout(() => {
+		this.cracks = 2;
+	},this.delay*.66);
+
+
 
 		setTimeout(() => {
 			if (players[index]) {
 				this.owner = id;
 				this.rgb = players[index].rgb;
 				this.occupied = true;
-
 
 				grids[players[index].lastGridId].occupied = false;
 				players[index].lastGridId = this.gridId;				
@@ -210,7 +219,7 @@ Grid.prototype.own = function(index, id) {
 				players[index].y = this.y;
 				players[index].contesting = false;
 			}
-		},400);
+		},this.delay);
 	}
 	else if (this.owner === id) {
 		setTimeout(() => {
@@ -223,5 +232,27 @@ Grid.prototype.own = function(index, id) {
 			players[index].y = this.y;
 			players[index].contesting = false;
 		},100);
+	}
+}
+Grid.prototype.reset = function() {
+	this.owner = false;
+	this.gridId = this.y/50 + (this.x/50 * 100);
+	this.rgb;
+	this.occupied = false;
+	this.rock = Math.floor((Math.random()*10)+1);
+	this.delay;
+	this.cracks = 0;
+
+	if (this.rock <= 4) {
+		this.delay = 300;
+	}
+	else if (this.rock <= 7) {
+		this.delay = 600;
+	}
+	else if (this.rock <= 9) {
+		this.delay = 900;
+	}
+	else if (this.rock <= 10) {
+		this.delay = 1100;
 	}
 }

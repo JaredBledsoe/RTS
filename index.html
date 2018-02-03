@@ -63,6 +63,12 @@ var rock3 = new Image();
 rock3.src = 'http://4.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdTpPrVI/AAAAAAAAAak/Dih8pIvjCh4/s1600/461223176.jpg';
 var rock4 = new Image();
 rock4.src = 'http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg';
+var crack1 = new Image();
+crack1.src = 'http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png';
+var crack2 = new Image();
+crack2.src = 'http://www.textures4photoshop.com/tex/thumbs/cracked-wall-PNG-texture-thumb24.png';
+var crack3 = new Image();
+crack3.src = 'http://www.textures4photoshop.com/tex/thumbs/broken-mirror-with-glass-shards-png-608.png';
 
 
 
@@ -151,7 +157,7 @@ function Players(x, y, id, moves, gridId) {
 
   this.camera = function(oldId, newId) {
     ctx.clearRect(player.x-canvas.width/1.5, player.y-canvas.width/1.5, player.x+canvas.width*2, player.y+canvas.height*2);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);7
     ctx.translate(-player.x+canvas.width/2, -player.y+canvas.height/2);
 
 
@@ -186,9 +192,9 @@ function draw(index) {
   ctx.beginPath();
   ctx.rect(grids[index].x, grids[index].y, 50, 50);
   if (grids[index].occupied === true) {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .9)';
     ctx.fill();
-    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
+    ctx.drawImage(head, grids[index].x+7+(Math.floor(Math.random()*2)-1), grids[index].y+7+(Math.floor(Math.random()*2)-1), 36, 36);
   }
   else if (typeof grids[index].owner === 'number' ) {
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
@@ -205,6 +211,21 @@ function draw(index) {
   }
   else if (grids[index].rock <= 10) {
     ctx.drawImage(rock4, grids[index].x, grids[index].y, 50, 50);
+  }
+
+  if (grids[index].owner === true) {
+    if (grids[index].cracks == 0) {
+      ctx.drawImage(crack1, grids[index].x, grids[index].y, 50, 50);
+    }
+    else if (grids[index].cracks == 1) {
+      ctx.drawImage(crack1, grids[index].x, grids[index].y, 50, 50);
+      ctx.drawImage(crack2, grids[index].x, grids[index].y, 50, 50);
+    }
+    else if (grids[index].cracks == 2) {
+      ctx.drawImage(crack1, grids[index].x, grids[index].y, 50, 50);
+      ctx.drawImage(crack2, grids[index].x, grids[index].y, 50, 50);
+      ctx.drawImage(crack3, grids[index].x, grids[index].y, 50, 50);
+    }
   }
 
 }
