@@ -3,16 +3,21 @@ const express = require('express');
 const SocketServer = require('ws').Server;
 const path = require('path');
 const PORT = process.env.PORT || 3000;
+
+const app = express(); 
+//app.use(serve(__dirname + '/public'));
+app.use('/', express.static('./public'));
+
 const INDEX = path.join(__dirname, 'index.html');
 const server = express()
   .use((req, res) => res.sendFile(INDEX) )
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 const wss = new SocketServer({ server });
+
 var clients = [];
 var players = [];
 var grids = [];
 // var updatedGrids = [];
-
 
 //Init grids
 for (var x=0; x<5000; x+=50) {
@@ -131,16 +136,16 @@ Player.prototype.update = function() {
 	//Movement
 	// var currentGridId = this.y/50 + (this.x/50 * 100);
 	if (this.contesting===false) {
-		if (this.moves[0] && this.y>0) {
+		if (this.moves[0] && this.y>0 && grids[this.gridId-1].rock != 101) {
 			grids[this.gridId-1].own(index, this.id);
 		}
-		else if (this.moves[1] && this.x<4950) {
+		else if (this.moves[1] && this.x<4950 && grids[this.gridId+100].rock != 101) {
 			grids[this.gridId+100].own(index, this.id);
 		}
-		else if (this.moves[2] && this.y<4950) {
+		else if (this.moves[2] && this.y<4950 && grids[this.gridId+1].rock != 101) {
 			grids[this.gridId+1].own(index, this.id);
 		}
-		else if (this.moves[3] && this.x>0) {
+		else if (this.moves[3] && this.x>0 && grids[this.gridId-100].rock != 101) {
 			grids[this.gridId-100].own(index, this.id);
 		}
 	}
@@ -172,20 +177,24 @@ function Grid(x, y) {
 	this.gridId = this.y/50 + (this.x/50 * 100);
 	this.rgb;
 	this.occupied = false;
-	this.rock = Math.floor((Math.random()*10)+1);
+	this.rock = Math.floor((Math.random()*100)+1);
 	this.delay;
 	this.cracks = 0;
 
-	if (this.rock <= 4) {
+	if (this.x == 0 || this.y == 0 || this.x == 4950 || this.y == 4950) {
+		this.rock = 101;
+	}
+
+	if (this.rock <= 75) {
 		this.delay = 300;
 	}
-	else if (this.rock <= 7) {
+	else if (this.rock <= 95) {
 		this.delay = 600;
 	}
-	else if (this.rock <= 9) {
+	else if (this.rock <= 99) {
 		this.delay = 900;
 	}
-	else if (this.rock <= 10) {
+	else if (this.rock <= 100) {
 		this.delay = 1100;
 	}
 }
@@ -202,8 +211,6 @@ Grid.prototype.own = function(index, id) {
 	setTimeout(() => {
 		this.cracks = 2;
 	},this.delay*.66);
-
-
 
 		setTimeout(() => {
 			if (players[index]) {

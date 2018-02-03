@@ -15,7 +15,7 @@
 </head>
 <body>
 <img id="arrow" src="https://d30y9cdsu7xlg0.cloudfront.net/png/34-200.png">
-<img id="head" src="https://minotar.net/helm/80.png">
+<img id="head" src="http://lawebloca.com/wp-content/uploads/2012/10/minecraft-creeper-face1.jpg">
 <img class="rock" src={require("images/1.png")}>
 <!-- <img class="rock" src="images/2.png">
 <img class="rock" src="images/3.png">
@@ -56,21 +56,22 @@ var arrow = document.getElementById('arrow');
 var head = document.getElementById('head');
 
 var rock1 = new Image();
-rock1.src = 'http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg';
+rock1.src = 'https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/461223139.jpg';
 var rock2 = new Image();
-rock2.src = 'http://1.bp.blogspot.com/_Ql_VVzn3j9g/R9kVejpPrXI/AAAAAAAAAa0/esIxiPs5drU/s1600/461223178.jpg';
+rock2.src = 'http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg';
 var rock3 = new Image();
-rock3.src = 'http://4.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdTpPrVI/AAAAAAAAAak/Dih8pIvjCh4/s1600/461223176.jpg';
+rock3.src = 'https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/tileable2b.png';
 var rock4 = new Image();
 rock4.src = 'http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg';
+var rock5 = new Image();
+rock5.src = 'https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg';
+
 var crack1 = new Image();
 crack1.src = 'http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png';
 var crack2 = new Image();
 crack2.src = 'http://www.textures4photoshop.com/tex/thumbs/cracked-wall-PNG-texture-thumb24.png';
 var crack3 = new Image();
 crack3.src = 'http://www.textures4photoshop.com/tex/thumbs/broken-mirror-with-glass-shards-png-608.png';
-
-
 
 window.onunload = function () {
  ws.send(JSON.stringify({
@@ -94,7 +95,6 @@ ws.onmessage = function(e) {
     player.y = message.player.y;
     
     grids = message.grids;
-    console.log(grids.length);
 
     if (player.updated == true) {
       player.updated = false;
@@ -189,28 +189,41 @@ function Players(x, y, id, moves, gridId) {
 
 
 function draw(index) {
+
   ctx.beginPath();
+
+  if (grids[index].owner.typeof != 'number') {
+    if (grids[index].rock <= 75) {
+      ctx.drawImage(rock1, grids[index].x, grids[index].y, 50, 50);
+    }
+    else if (grids[index].rock <= 95) {
+      ctx.drawImage(rock2, grids[index].x, grids[index].y, 50, 50);
+    }
+    else if (grids[index].rock <= 99) {
+      ctx.drawImage(rock3, grids[index].x, grids[index].y, 50, 50);
+    }
+    else if (grids[index].rock <= 100) {
+      ctx.drawImage(rock4, grids[index].x, grids[index].y, 50, 50);
+    }
+    else if (grids[index].rock == 101) {
+      ctx.drawImage(rock5, grids[index].x, grids[index].y, 50, 50);
+    }
+  }
+
   ctx.rect(grids[index].x, grids[index].y, 50, 50);
   if (grids[index].occupied === true) {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .9)';
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .65)';
     ctx.fill();
+    ctx.save();
+    ctx.shadowBlur = Math.random()*3+10;
+    ctx.shadowColor = 'black';
+
     ctx.drawImage(head, grids[index].x+7+(Math.floor(Math.random()*2)-1), grids[index].y+7+(Math.floor(Math.random()*2)-1), 36, 36);
+    ctx.restore();
   }
-  else if (typeof grids[index].owner === 'number' ) {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
+  else if (typeof grids[index].owner === 'number') {
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .65)';
     ctx.fill();
-  }
-  else if (grids[index].rock <= 4) {
-    ctx.drawImage(rock1, grids[index].x, grids[index].y, 50, 50);
-  }
-  else if (grids[index].rock <= 7) {
-    ctx.drawImage(rock2, grids[index].x, grids[index].y, 50, 50);
-  }
-  else if (grids[index].rock <= 9) {
-    ctx.drawImage(rock3, grids[index].x, grids[index].y, 50, 50);
-  }
-  else if (grids[index].rock <= 10) {
-    ctx.drawImage(rock4, grids[index].x, grids[index].y, 50, 50);
   }
 
   if (grids[index].owner === true) {
