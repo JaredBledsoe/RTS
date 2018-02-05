@@ -3,6 +3,7 @@
 <style>
   body {
     margin: 0;
+    user-select: none;
   }
   img {
     position: absolute;
@@ -11,19 +12,55 @@
   canvas {
     background-image: url('http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kXMzpPrcI/AAAAAAAAAbY/UrjCymSWtiU/s1600/461223182.jpg');
   }
+  #hud {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    height: 50px;
+    bottom: 5%;
+    white-space: nowrap;
+  }
+  .slot {
+    width: 80px;
+    height: 80px;
+    display: inline-block;
+    box-shadow: inset 0px 0px 15px 5px rgba(0,0,0,0.75);
+    background-color: rgba(0, 0, 0, .25);
+    font-size: 20px;
+    color: white;
+  }
+  .select {
+    background-color: rgba(255, 255, 255, .25);
+  }
 </style>
 </head>
 <body>
-<img id="arrow" src="https://d30y9cdsu7xlg0.cloudfront.net/png/34-200.png">
 <img id="head" src="http://lawebloca.com/wp-content/uploads/2012/10/minecraft-creeper-face1.jpg">
-<img class="rock" src={require("images/1.png")}>
-<!-- <img class="rock" src="images/2.png">
-<img class="rock" src="images/3.png">
-<img class="rock" src="images/4.png">
- -->
 
-<canvas></canvas>
+<img id="rock1" src="https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/461223139.jpg">
+<img id="rock2" src="http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg">
+<img id="rock3" src="https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/tileable2b.png">
+<img id="rock4" src="http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg">
+<img id="rock5" src="https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg">
+
+<img id="crack1" src="http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png">
+<img id="crack2" src="http://www.textures4photoshop.com/tex/thumbs/cracked-wall-PNG-texture-thumb24.png">
+<img id="crack3" src="http://www.textures4photoshop.com/tex/thumbs/broken-mirror-with-glass-shards-png-608.png">
+
+<canvas id="game"></canvas>
   
+<div id="hud">
+  <div class="slot" style="background-image: url('https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/461223139.jpg')"></div>
+  <div class="slot" style="background-image: url('http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg')"></div>
+  <div class="slot" style="background-image: url('https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/tileable2b.png')"></div>
+  <div class="slot" style="background-image: url('http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg')"></div>
+  <div class="slot"></div>
+  <div class="slot"></div>
+  <div class="slot"></div>
+  <div class="slot"></div>
+</div>
+
+
 <script>
 
 
@@ -38,7 +75,7 @@ var ws = new WebSocket(HOST);
 //Local
 //ws = new WebSocket('ws://localhost:3000');
 
-var canvas = document.getElementsByTagName('canvas')[0];
+var canvas = document.getElementById('game');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -48,6 +85,7 @@ window.addEventListener("resize", function() {
 });
 
 var ctx = canvas.getContext('2d');
+
 var keyStates = [];
 
 var grids = [];
@@ -55,30 +93,27 @@ var player;
 var arrow = document.getElementById('arrow');
 var head = document.getElementById('head');
 
-var rock1 = new Image();
-rock1.src = 'https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/461223139.jpg';
-var rock2 = new Image();
-rock2.src = 'http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg';
-var rock3 = new Image();
-rock3.src = 'https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/tileable2b.png';
-var rock4 = new Image();
-rock4.src = 'http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg';
-var rock5 = new Image();
-rock5.src = 'https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg';
+var rock1 = document.getElementById('rock1');
+var rock2 = document.getElementById('rock2');
+var rock3 = document.getElementById('rock3');
+var rock4 = document.getElementById('rock4');
+var rock5 = document.getElementById('rock5');
 
-var crack1 = new Image();
-crack1.src = 'http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png';
-var crack2 = new Image();
-crack2.src = 'http://www.textures4photoshop.com/tex/thumbs/cracked-wall-PNG-texture-thumb24.png';
-var crack3 = new Image();
-crack3.src = 'http://www.textures4photoshop.com/tex/thumbs/broken-mirror-with-glass-shards-png-608.png';
+var crack1 = document.getElementById('crack1');
+var crack2 = document.getElementById('crack2');
+var crack3 = document.getElementById('crack3');
 
-window.onunload = function () {
- ws.send(JSON.stringify({
-     type: 'close',
-     id: player.id
-    }));
-};
+// window.onunload = function () {
+//  ws.send(JSON.stringify({
+//      type: 'close',
+//      id: player.id
+//     }));
+// };
+
+
+
+
+
 
 
 
@@ -91,8 +126,12 @@ ws.onmessage = function(e) {
     //Move viewport to center player
     player.camera(player.gridId, message.player.gridId);
     player.gridId = message.player.gridId;
-    player.x = message.player.x;
-    player.y = message.player.y;
+
+    if (player.smooth[0] === 0) {
+      player.x = message.player.x;
+      player.y = message.player.y;
+      player.smooth = message.player.smooth;
+    }
     
     grids = message.grids;
 
@@ -108,13 +147,22 @@ ws.onmessage = function(e) {
     player.camera();
   }
 
-
   //Player just joined
   else if (message.type == 'initPlayer') {
     ctx.translate(canvas.width/2, canvas.height/2);
     player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
   }
+
+  //Player claimed a grid
+  else if (message.type == 'claimGrid') {
+    HUD.draw(undefined, message.grid.rock);
+  }
 } 
+
+
+
+
+
 
 
 
@@ -127,6 +175,8 @@ function Players(x, y, id, moves, gridId) {
   this.moves = moves;
   this.gridId = gridId;
   this.updated = false;
+  this.smoothMoving = false;
+  this.smooth = [0, 0];
 
   this.control = function() {
     if (keyStates[38] || keyStates[87]) {
@@ -156,27 +206,39 @@ function Players(x, y, id, moves, gridId) {
   };
 
   this.camera = function(oldId, newId) {
-    ctx.clearRect(player.x-canvas.width/1.5, player.y-canvas.width/1.5, player.x+canvas.width*2, player.y+canvas.height*2);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);7
-    ctx.translate(-player.x+canvas.width/2, -player.y+canvas.height/2);
+    ctx.clearRect(this.x-canvas.width/1.5, this.y-canvas.width/1.5, this.x+canvas.width*2, this.y+canvas.height*2);
 
+    if (typeof this.smooth[0] === 'string' && this.smoothMoving === false) {
+      this.smoothMoving = true;
+      var iterations = 1;
 
-    // if (newId == oldId-1) {
-    //   console.log("UP");
-    //   ctx.translate(player.x, player.y);
-    // }
-    // else if (newId == oldId+1) {
-    //   console.log("DOWN");
-    //   ctx.translate(player.x, player.y);
-    // }
-    // else if (newId == oldId+100) {
-    //   console.log("RIGHT");
-    //   ctx.translate(player.x, player.y);
-    // }
-    // else if (newId == oldId-100) {
-    //   console.log("LEFT");
-    //   ctx.translate(player.x, player.y);
-    // }
+      var smoothCamera = setInterval(() => {
+        if (this.smooth[0] === 'up') {
+          this.y-=1;
+        }
+        else if (this.smooth[0] === 'right') {
+          this.x+=1;
+        }
+        else if (this.smooth[0] === 'down') {
+          this.y+=1;
+        }
+        else if (this.smooth[0] === 'left') {
+          this.x-=1;
+        }
+
+        ctx.setTransform(1, 0, 0, 1, -this.x+canvas.width/2, -this.y+canvas.height/2);
+
+        if (iterations >= 50) {
+          this.smooth = [0, 0];
+          this.smoothMoving = false;
+          iterations = 1;
+          clearInterval(smoothCamera);
+        }
+        else {
+          iterations++;
+        }
+      }, this.smooth[1]/50);
+    }
 
     for (var i=0; i<grids.length; i++) {
       draw(i);
@@ -188,31 +250,79 @@ function Players(x, y, id, moves, gridId) {
 
 
 
-function draw(index) {
+var HUD = {
+  slot1: 0,
+  slot2: 0,
+  slot3: 0,
+  slot4: 0,
+  slot5: 0,
+  slot6: 0,
+  slot7: 0,
+  slot8: 0,
+
+  draw: function(selectSlot, claimGrid) {
+    if (selectSlot) {
+      for (var i=0; i<8; i++) {
+        if (i != selectSlot-49) {
+          document.getElementsByClassName('slot')[i].classList.remove('select');    
+        }
+        else if (i == selectSlot-49) {
+          if (document.getElementsByClassName('slot')[i].classList.contains('select')) {
+            document.getElementsByClassName('slot')[i].classList.remove('select');    
+          }
+          else {
+            document.getElementsByClassName('slot')[i].classList.add('select');    
+          }
+        }
+      }
+    }
+    else if (claimGrid) {
+      claimGrid <= 75 ? this.slot1++ : 
+      claimGrid <= 95 ? this.slot2++ : 
+      claimGrid <= 99 ? this.slot3++ :
+      claimGrid == 100 ? this.slot4++ : this.slot5++;
+    
+
+      for (var i=1; i<9; i++) {
+        var slot = 'this.slot'.concat(i);
+        document.getElementsByClassName('slot')[i-1].innerHTML = eval(slot);
+      }
+    }
+  },
+
+  slotUpdater: function() {
+    for (var i=1; i<8; i++) {
+      var slot = 'slot'.concat(i);
+
+      console.log(slot);
+
+      this.slot.addEventListener('change', function() {
+      });
+    }
+  }
+}
+
+
+
+
+function draw(index, hud) {
 
   ctx.beginPath();
 
-  if (grids[index].owner.typeof != 'number') {
-    if (grids[index].rock <= 75) {
-      ctx.drawImage(rock1, grids[index].x, grids[index].y, 50, 50);
-    }
-    else if (grids[index].rock <= 95) {
-      ctx.drawImage(rock2, grids[index].x, grids[index].y, 50, 50);
-    }
-    else if (grids[index].rock <= 99) {
-      ctx.drawImage(rock3, grids[index].x, grids[index].y, 50, 50);
-    }
-    else if (grids[index].rock <= 100) {
-      ctx.drawImage(rock4, grids[index].x, grids[index].y, 50, 50);
-    }
-    else if (grids[index].rock == 101) {
-      ctx.drawImage(rock5, grids[index].x, grids[index].y, 50, 50);
-    }
+  //Textured rocks
+  if (grids[index].owner === false || grids[index].contesting === true) {
+    var rock = grids[index].rock <= 75 ? rock1 : 
+               grids[index].rock <= 95 ? rock2 : 
+               grids[index].rock <= 99 ? rock3 :
+               grids[index].rock == 100 ? rock4 : rock5;
+
+      ctx.drawImage(rock, grids[index].x, grids[index].y, 50, 50);
   }
 
+  //Player or their path
   ctx.rect(grids[index].x, grids[index].y, 50, 50);
   if (grids[index].occupied === true) {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .65)';
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
     ctx.save();
     ctx.shadowBlur = Math.random()*3+10;
@@ -222,25 +332,14 @@ function draw(index) {
     ctx.restore();
   }
   else if (typeof grids[index].owner === 'number') {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .65)';
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
   }
 
+  //Rock being mined
   if (grids[index].owner === true) {
-    if (grids[index].cracks == 0) {
-      ctx.drawImage(crack1, grids[index].x, grids[index].y, 50, 50);
-    }
-    else if (grids[index].cracks == 1) {
-      ctx.drawImage(crack1, grids[index].x, grids[index].y, 50, 50);
-      ctx.drawImage(crack2, grids[index].x, grids[index].y, 50, 50);
-    }
-    else if (grids[index].cracks == 2) {
-      ctx.drawImage(crack1, grids[index].x, grids[index].y, 50, 50);
-      ctx.drawImage(crack2, grids[index].x, grids[index].y, 50, 50);
-      ctx.drawImage(crack3, grids[index].x, grids[index].y, 50, 50);
-    }
+    ctx.drawImage(eval('crack'.concat(grids[index].cracks+1)), grids[index].x, grids[index].y, 50, 50);
   }
-
 }
 
 
@@ -248,11 +347,20 @@ function draw(index) {
 
 
 window.addEventListener('keydown', function(e) {
+  // e.preventDefault();
   keyStates[e.keyCode] = true;
   player.updated = true;
+
+  if (e.dkeyCode >= 49 && e.keyCode <= 57) {
+    HUD.select(e.keyCode);
+  }
 });
 window.addEventListener('keyup', function(e) {
-  keyStates[e.keyCode] = false;
+  // e.preventDefault();
+  if (e.keyCode < 49 || e.keyCode > 57) {
+    keyStates[e.keyCode] = false;
+  }
+
   player.updated = true;
 });
 
