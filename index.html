@@ -45,10 +45,10 @@
 <body>
 <img id="head" src="http://lawebloca.com/wp-content/uploads/2012/10/minecraft-creeper-face1.jpg">
 
-<img id="rock1" src="http://rtstextures.bitballoon.com/rock1.jpg">
-<img id="rock2" src="http://rtstextures.bitballoon.com/rock2.jpg">
-<img id="rock3" src="http://rtstextures.bitballoon.com/rock3.jpg">
-<img id="rock4" src="http://rtstextures.bitballoon.com/rock4.jpg">
+<img id="rock1" src="http://rtstextures.bitballoon.com/rock1.png">
+<img id="rock2" src="http://rtstextures.bitballoon.com/rock2.png">
+<img id="rock3" src="http://rtstextures.bitballoon.com/rock3.png">
+<img id="rock4" src="http://rtstextures.bitballoon.com/rock4.png">
 <img id="rock5" src="https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg">
 
 <img id="crack1" src="http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png">
@@ -60,10 +60,10 @@
 <!-- <div id="controls"><image src="public/images/controls.png"></div>
  -->
 <div id="hud">
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.jpg')"></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.jpg')"></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.jpg')"></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.jpg')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.png')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.png')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.png')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.png')"></div>
   <div class="slot"></div>
   <div class="slot"></div>
   <div class="slot"></div>
@@ -131,6 +131,7 @@ var crack3 = document.getElementById('crack3');
 ws.onmessage = function(e) {
   var message = JSON.parse(e.data);
   if (message.type == 'gameUpdate') {
+    console.log(message);
     //Move viewport to center player
     player.gridId = message.player.gridId;
     player.updatedGrids = message.updatedGrids;
