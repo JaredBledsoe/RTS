@@ -4,7 +4,7 @@ const SocketServer = require('ws').Server;
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 
-const app = express(); 
+//const app = express(); 
 // app.use('/', express.static('./public'));
 
 const INDEX = path.join(__dirname, 'index.html');
@@ -196,31 +196,31 @@ Player.prototype.update = function() {
 		}
 
 		//Move camera smoothly
-// 	    if (typeof this.smooth[0] === 'string' && this.smoothMoving === false) {
-// 	    	this.smoothMoving = true;
+	    if (typeof this.smooth[0] === 'string' && this.smoothMoving === false) {
+	    	this.smoothMoving = true;
 
-// 	    	var smoothCamera = setInterval(() => {
-// 				if (this.smooth[0] === 'up') {
-// 		          this.y-=2;
-// 		        }
-// 		        else if (this.smooth[0] === 'right') {
-// 		          this.x+=2;
-// 		        }
-// 		        else if (this.smooth[0] === 'down') {
-// 		          this.y+=2;
-// 		        }
-// 		        else if (this.smooth[0] === 'left') {
-// 		          this.x-=2;
-// 		        }
+	    	var smoothCamera = setInterval(() => {
+				if (this.smooth[0] === 'up') {
+		          this.y-=2;
+		        }
+		        else if (this.smooth[0] === 'right') {
+		          this.x+=2;
+		        }
+		        else if (this.smooth[0] === 'down') {
+		          this.y+=2;
+		        }
+		        else if (this.smooth[0] === 'left') {
+		          this.x-=2;
+		        }
 
-// 		        if (Math.abs(this.x-this.smooth[2]) <= 6 && Math.abs(this.y-this.smooth[3]) <= 6) {
-// 		        	iterations = 1;
-// 		        	this.smoothMoving = false;
-// 		        	this.smooth = [0, 0, 0, 0];
-// 		        	clearInterval(smoothCamera);
-// 		        }
-// 	    	}, this.smooth[1]/25);
-// 		}
+		        if (Math.abs(this.x-this.smooth[2]) <= 6 && Math.abs(this.y-this.smooth[3]) <= 6) {
+		        	iterations = 1;
+		        	this.smoothMoving = false;
+		        	this.smooth = [0, 0, 0, 0];
+		        	clearInterval(smoothCamera);
+		        }
+	    	}, this.smooth[1]/25);
+		}
 
 		//Which blocks to show, based on position
 		this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-96 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-96 : 0;
