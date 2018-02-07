@@ -20,6 +20,14 @@
     bottom: 5%;
     white-space: nowrap;
   }
+  #controls {
+    width: 500px;
+    height: 500px;
+    position: absolute;
+    background-image: url('../public/images/controls.png');
+    top: 5px;
+    left: 5px;
+  }
   .slot {
     width: 80px;
     height: 80px;
@@ -37,10 +45,10 @@
 <body>
 <img id="head" src="http://lawebloca.com/wp-content/uploads/2012/10/minecraft-creeper-face1.jpg">
 
-<img id="rock1" src="https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/461223139.jpg">
-<img id="rock2" src="http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg">
-<img id="rock3" src="https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/tileable2b.png">
-<img id="rock4" src="http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg">
+<img id="rock1" src="http://rtstextures.bitballoon.com/rock1.jpg">
+<img id="rock2" src="http://rtstextures.bitballoon.com/rock2.jpg">
+<img id="rock3" src="http://rtstextures.bitballoon.com/rock3.jpg">
+<img id="rock4" src="http://rtstextures.bitballoon.com/rock4.jpg">
 <img id="rock5" src="https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg">
 
 <img id="crack1" src="http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png">
@@ -49,11 +57,13 @@
 
 <canvas id="game"></canvas>
   
+<!-- <div id="controls"><image src="public/images/controls.png"></div>
+ -->
 <div id="hud">
-  <div class="slot" style="background-image: url('https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/461223139.jpg')"></div>
-  <div class="slot" style="background-image: url('http://3.bp.blogspot.com/_Ql_VVzn3j9g/R9kVfDpPrYI/AAAAAAAAAa8/xxBZQqZMhoI/s1600/461223179.jpg')"></div>
-  <div class="slot" style="background-image: url('https://opengameart.org/sites/default/files/styles/medium/public/oga-textures/tileable2b.png')"></div>
-  <div class="slot" style="background-image: url('http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kVdzpPrWI/AAAAAAAAAas/L0nLJQTx_wk/s1600/461223177.jpg')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.jpg')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.jpg')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.jpg')"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.jpg')"></div>
   <div class="slot"></div>
   <div class="slot"></div>
   <div class="slot"></div>
@@ -87,7 +97,6 @@ window.addEventListener("resize", function() {
 var ctx = canvas.getContext('2d');
 
 var keyStates = [];
-
 var grids = [];
 var player;
 var arrow = document.getElementById('arrow');
@@ -122,19 +131,21 @@ var crack3 = document.getElementById('crack3');
 ws.onmessage = function(e) {
   var message = JSON.parse(e.data);
   if (message.type == 'gameUpdate') {
-    player.control();
     //Move viewport to center player
-    player.camera(player.gridId, message.player.gridId);
     player.gridId = message.player.gridId;
+    player.updatedGrids = message.updatedGrids;
+    player.viewStartGrid = message.player.viewStartGrid;
+    player.viewEndGrid = message.player.viewEndGrid;
 
-    if (player.smooth[0] === 0) {
+
+    // if (player.smooth[0] === 0) {
       player.x = message.player.x;
       player.y = message.player.y;
-      player.smooth = message.player.smooth;
-    }
-    
-    grids = message.grids;
 
+      // player.smooth = message.player.smooth;
+    // }
+    
+    player.control();
     if (player.updated == true) {
       player.updated = false;
       ws.send(JSON.stringify({
@@ -147,15 +158,22 @@ ws.onmessage = function(e) {
     player.camera();
   }
 
-  //Player just joined
-  else if (message.type == 'initPlayer') {
-    ctx.translate(canvas.width/2, canvas.height/2);
-    player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
-  }
-
   //Player claimed a grid
   else if (message.type == 'claimGrid') {
     HUD.draw(undefined, message.grid.rock);
+  }
+
+  //Player just joined
+  else if (message.type == 'initPlayer') {
+    player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
+    grids = message.grids;
+
+    ctx.setTransform(1, 0, 0, 1, -player.x+canvas.width/2, -player.y+canvas.height/2);
+
+    ws.send(JSON.stringify({
+      type: 'initPlayer',
+      info: player
+    })); 
   }
 } 
 
@@ -176,9 +194,16 @@ function Players(x, y, id, moves, gridId) {
   this.gridId = gridId;
   this.updated = false;
   this.smoothMoving = false;
-  this.smooth = [0, 0];
+  this.smooth = [0, 0, 0, 0];
+  this.updatedGrids = [];
+  this.viewStartGrid;
+  this.viewEndGrid;
+  this.canvasWidth = canvas.width;
+  this.canvasHeight = canvas.height;
+
 
   this.control = function() {
+
     if (keyStates[38] || keyStates[87]) {
       this.moves[0] = true;
     }
@@ -205,46 +230,31 @@ function Players(x, y, id, moves, gridId) {
     }
   };
 
-  this.camera = function(oldId, newId) {
-    ctx.clearRect(this.x-canvas.width/1.5, this.y-canvas.width/1.5, this.x+canvas.width*2, this.y+canvas.height*2);
+  this.camera = function() {
 
-    if (typeof this.smooth[0] === 'string' && this.smoothMoving === false) {
-      this.smoothMoving = true;
-      var iterations = 1;
+    ctx.setTransform(1, 0, 0, 1, -this.x+canvas.width/2, -this.y+canvas.height/2);
 
-      var smoothCamera = setInterval(() => {
-        if (this.smooth[0] === 'up') {
-          this.y-=1;
-        }
-        else if (this.smooth[0] === 'right') {
-          this.x+=1;
-        }
-        else if (this.smooth[0] === 'down') {
-          this.y+=1;
-        }
-        else if (this.smooth[0] === 'left') {
-          this.x-=1;
-        }
-
-        ctx.setTransform(1, 0, 0, 1, -this.x+canvas.width/2, -this.y+canvas.height/2);
-
-        if (iterations >= 50) {
-          this.smooth = [0, 0];
-          this.smoothMoving = false;
-          iterations = 1;
-          clearInterval(smoothCamera);
-        }
-        else {
-          iterations++;
-        }
-      }, this.smooth[1]/50);
+    for (var i=0; i<this.updatedGrids.length; i++) {
+      if (this.updatedGrids[i]) {
+        grids[this.updatedGrids[i].gridId] = this.updatedGrids[i];
+      }
     }
+        
+    ctx.clearRect(player.x-canvas.width/2, player.y-canvas.height/2, canvas.width, canvas.height);
 
-    for (var i=0; i<grids.length; i++) {
+    for (var i=this.viewStartGrid; i<this.viewEndGrid; i++) {
       draw(i);
     }
+
+    ctx.drawImage(head, this.x+7, this.y+7, 36, 36);
+
   };
 };
+
+
+
+
+
 
 
 
@@ -294,8 +304,6 @@ var HUD = {
     for (var i=1; i<8; i++) {
       var slot = 'slot'.concat(i);
 
-      console.log(slot);
-
       this.slot.addEventListener('change', function() {
       });
     }
@@ -305,7 +313,7 @@ var HUD = {
 
 
 
-function draw(index, hud) {
+function draw(index) {
 
   ctx.beginPath();
 
@@ -321,14 +329,11 @@ function draw(index, hud) {
 
   //Player or their path
   ctx.rect(grids[index].x, grids[index].y, 50, 50);
-  if (grids[index].occupied === true) {
+  if (grids[index].occupied === true && grids[index].owner != player.id) {
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
     ctx.save();
-    ctx.shadowBlur = Math.random()*3+10;
-    ctx.shadowColor = 'black';
-
-    ctx.drawImage(head, grids[index].x+7+(Math.floor(Math.random()*2)-1), grids[index].y+7+(Math.floor(Math.random()*2)-1), 36, 36);
+    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
     ctx.restore();
   }
   else if (typeof grids[index].owner === 'number') {
@@ -346,20 +351,30 @@ function draw(index, hud) {
 
 
 
+
+
+
+
+
 window.addEventListener('keydown', function(e) {
   // e.preventDefault();
-  keyStates[e.keyCode] = true;
   player.updated = true;
 
-  if (e.dkeyCode >= 49 && e.keyCode <= 57) {
-    HUD.select(e.keyCode);
+  if (e.keyCode >= 37 && e.keyCode <= 40 || e.keyCode == 87 || e.keyCode == 83  || e.keyCode == 65  || e.keyCode == 68) {
+    keyStates[37] = false;
+    keyStates[38] = false;
+    keyStates[39] = false;
+    keyStates[40] = false;
+    keyStates[87] = false;
+    keyStates[83] = false;
+    keyStates[65] = false;
+    keyStates[67] = false;
+    keyStates[e.keyCode] = true;
   }
 });
 window.addEventListener('keyup', function(e) {
   // e.preventDefault();
-  if (e.keyCode < 49 || e.keyCode > 57) {
     keyStates[e.keyCode] = false;
-  }
 
   player.updated = true;
 });
