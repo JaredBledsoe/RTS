@@ -131,7 +131,6 @@ var crack3 = document.getElementById('crack3');
 ws.onmessage = function(e) {
   var message = JSON.parse(e.data);
   if (message.type == 'gameUpdate') {
-    console.log(message);
     //Move viewport to center player
     player.gridId = message.player.gridId;
     player.updatedGrids = message.updatedGrids;
