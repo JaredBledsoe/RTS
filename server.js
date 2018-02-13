@@ -179,25 +179,27 @@ Player.prototype.update = function() {
 
 		//WASD or arrows
 		if (this.contesting === false) {
-			if (this.moves[0] && grids[this.gridId-1].rock != 101) {
+			if (this.moves[0] && grids[this.gridId-1].rock != 101 && grids[this.gridId-1].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId-1].own(index, this.id);
 				this.smooth = ['up', grids[this.gridId-1].delay, grids[this.gridId-1].x, grids[this.gridId-1].y];
 			}
-			else if (this.moves[1] && grids[this.gridId+100].rock != 101) {
+			else if (this.moves[1] && grids[this.gridId+100].rock != 101 && grids[this.gridId+100].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId+100].own(index, this.id);
 				this.smooth = ['right', grids[this.gridId+100].delay, grids[this.gridId+100].x, grids[this.gridId+100].y];
 			}
-			else if (this.moves[2] && grids[this.gridId+1].rock != 101) {
+			else if (this.moves[2] && grids[this.gridId+1].rock != 101 && grids[this.gridId+1].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId+1].own(index, this.id);
 				this.smooth = ['down', grids[this.gridId+1].delay, grids[this.gridId+1].x, grids[this.gridId+1].y];
 			}
-			else if (this.moves[3] && grids[this.gridId-100].rock != 101) {
+			else if (this.moves[3] && grids[this.gridId-100].rock != 101 && grids[this.gridId-100].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId-100].own(index, this.id);
 				this.smooth = ['left', grids[this.gridId-100].delay, grids[this.gridId-100].x, grids[this.gridId-100].y];
+			}
+			else {
 			}
 		}
 
@@ -229,45 +231,14 @@ Player.prototype.update = function() {
 		}
 
 		//Which blocks to show, based on position
-		this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-96 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-96 : 0;
+		this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-196 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-196 : 0;
 		this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 < grids.length ? this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 : 0;
 	}
 	catch (e) {
 		console.log(e);
 	}
 };
-// Player.prototype.build = function() {
-// 	try {
 
-// 		if (this.build != false) {
-// 			grids[this.gridId-1].build();
-// 			grids[this.gridId+1].build();
-// 			grids[this.gridId-100].build();
-// 			grids[this.gridId+100].build();
-// 		}
-
-// 	}
-// 	catch(e) {
-// 		// console.log(e);
-// 	}
-// };
-// Player.prototype.removeBuild = function() {
-// 	console.log('removing build');
-// 	try {
-// 		grids[this.gridId-1].building = false;
-// 		grids[this.gridId+1].building = false;
-// 		grids[this.gridId-100].building = false;
-// 		grids[this.gridId+100].building = false;
-
-// 		updatedGrids.push(grids[this.gridId-1]);
-// 		updatedGrids.push(grids[this.gridId+1]);
-// 		updatedGrids.push(grids[this.gridId-100]);
-// 		updatedGrids.push(grids[this.gridId+100]);
-// 	}
-// 	catch(e) {
-// 		// console.log(e);
-// 	}
-// };
 
 
 
@@ -360,18 +331,6 @@ Grid.prototype.own = function(index, id) {
 		console.log(e);
 	}
 };
-// Grid.prototype.build = function() {
-// 	try {
-// 		console.log('building on: ' + this.gridId);
-
-// 		this.building = true;
-// 		updatedGrids.push(this);
-
-// 	}
-// 	catch (e) {
-// 		console.log(e);
-// 	}
-// };
 Grid.prototype.reset = function() {
 	try {
 		this.owner = false;
