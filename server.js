@@ -4,7 +4,7 @@ const SocketServer = require('ws').Server;
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 
-//const app = express(); 
+const app = express(); 
 // app.use('/', express.static('./public'));
 
 const INDEX = path.join(__dirname, 'index.html');
@@ -83,9 +83,14 @@ wss.on('connection', function(ws) {
 			if (message.type == 'playerUpdate') {
 				if (players[currentId]) {
 					players[currentId].moves = message.info.moves;
+
+					// if (message.info.build !== false) {
+					// 	players[currentId].build();
+					// }
 				}
 			}
 
+			//Player just joined
 			else if (message.type == 'initPlayer') {
 				players[currentId].canvasWidth = message.info.canvasWidth;
 				players[currentId].canvasHeight = message.info.canvasHeight;
@@ -170,25 +175,26 @@ function Player() {
 Player.prototype.update = function() {
 	var index = players.indexOf(this);
 
-	//Movement
 	try {
+
+		//WASD or arrows
 		if (this.contesting === false) {
-			if (this.moves[0] && this.y>0 && grids[this.gridId-1].rock != 101) {
+			if (this.moves[0] && grids[this.gridId-1].rock != 101) {
 				this.contesting = true;
 				grids[this.gridId-1].own(index, this.id);
 				this.smooth = ['up', grids[this.gridId-1].delay, grids[this.gridId-1].x, grids[this.gridId-1].y];
 			}
-			else if (this.moves[1] && this.x<4950 && grids[this.gridId+100].rock != 101) {
+			else if (this.moves[1] && grids[this.gridId+100].rock != 101) {
 				this.contesting = true;
 				grids[this.gridId+100].own(index, this.id);
 				this.smooth = ['right', grids[this.gridId+100].delay, grids[this.gridId+100].x, grids[this.gridId+100].y];
 			}
-			else if (this.moves[2] && this.y<4950 && grids[this.gridId+1].rock != 101) {
+			else if (this.moves[2] && grids[this.gridId+1].rock != 101) {
 				this.contesting = true;
 				grids[this.gridId+1].own(index, this.id);
 				this.smooth = ['down', grids[this.gridId+1].delay, grids[this.gridId+1].x, grids[this.gridId+1].y];
 			}
-			else if (this.moves[3] && this.x>0 && grids[this.gridId-100].rock != 101) {
+			else if (this.moves[3] && grids[this.gridId-100].rock != 101) {
 				this.contesting = true;
 				grids[this.gridId-100].own(index, this.id);
 				this.smooth = ['left', grids[this.gridId-100].delay, grids[this.gridId-100].x, grids[this.gridId-100].y];
@@ -230,6 +236,38 @@ Player.prototype.update = function() {
 		console.log(e);
 	}
 };
+// Player.prototype.build = function() {
+// 	try {
+
+// 		if (this.build != false) {
+// 			grids[this.gridId-1].build();
+// 			grids[this.gridId+1].build();
+// 			grids[this.gridId-100].build();
+// 			grids[this.gridId+100].build();
+// 		}
+
+// 	}
+// 	catch(e) {
+// 		// console.log(e);
+// 	}
+// };
+// Player.prototype.removeBuild = function() {
+// 	console.log('removing build');
+// 	try {
+// 		grids[this.gridId-1].building = false;
+// 		grids[this.gridId+1].building = false;
+// 		grids[this.gridId-100].building = false;
+// 		grids[this.gridId+100].building = false;
+
+// 		updatedGrids.push(grids[this.gridId-1]);
+// 		updatedGrids.push(grids[this.gridId+1]);
+// 		updatedGrids.push(grids[this.gridId-100]);
+// 		updatedGrids.push(grids[this.gridId+100]);
+// 	}
+// 	catch(e) {
+// 		// console.log(e);
+// 	}
+// };
 
 
 
@@ -251,6 +289,7 @@ function Grid(x, y) {
 	this.delay;
 	this.cracks = 0;
 	this.contesting = false;
+	this.building = false;
 
 	if (this.x == 0 || this.y == 0 || this.x == 4950 || this.y == 4950) {
 		this.rock = 101;
@@ -259,7 +298,7 @@ function Grid(x, y) {
 	this.rock <= 75 ? this.delay = 300 :
 	this.rock <= 95 ? this.delay = 600 :
 	this.rock <= 99 ? this.delay = 900 : this.delay = 2000;
-}
+};
 Grid.prototype.own = function(index, id) {	
 	try {
 		if (this.owner !== id) {
@@ -320,7 +359,19 @@ Grid.prototype.own = function(index, id) {
 	catch (e) {
 		console.log(e);
 	}
-}
+};
+// Grid.prototype.build = function() {
+// 	try {
+// 		console.log('building on: ' + this.gridId);
+
+// 		this.building = true;
+// 		updatedGrids.push(this);
+
+// 	}
+// 	catch (e) {
+// 		console.log(e);
+// 	}
+// };
 Grid.prototype.reset = function() {
 	try {
 		this.owner = false;
@@ -340,4 +391,4 @@ Grid.prototype.reset = function() {
 	catch (e) {
 		console.log(e);
 	}
-}
+};

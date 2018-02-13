@@ -1,5 +1,6 @@
 <html>
 <head>
+<link href="https://fonts.googleapis.com/css?family=Shrikhand" rel="stylesheet">
 <style>
   body {
     margin: 0;
@@ -37,8 +38,19 @@
     font-size: 20px;
     color: white;
   }
+  .slotValue {
+    margin: 0 5px;
+    font-family: 'Shrikhand', cursive;
+  }
   .select {
     background-color: rgba(255, 255, 255, .25);
+  }
+
+  #test {
+    width: 50px;
+    height: 50px;
+    background-color: red;
+    position: absolute;
   }
 </style>
 </head>
@@ -60,17 +72,15 @@
 <!-- <div id="controls"><image src="public/images/controls.png"></div>
  -->
 <div id="hud">
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.png')"></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.png')"></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.png')"></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.png')"></div>
-  <div class="slot"></div>
-  <div class="slot"></div>
-  <div class="slot"></div>
-  <div class="slot"></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.png')"><p class="slotValue">0</p></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.png')"><p class="slotValue">0</p></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.png')"><p class="slotValue">0</p></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.png')"><p class="slotValue">0</p></div>
+  <div class="slot"><p class="slotValue">0</p></div>
+  <div class="slot"><p class="slotValue">0</p></div>
+  <div class="slot"><p class="slotValue">0</p></div>
+  <div class="slot"><p class="slotValue">0</p></div>
 </div>
-
-
 <script>
 
 
@@ -136,15 +146,16 @@ ws.onmessage = function(e) {
     player.updatedGrids = message.updatedGrids;
     player.viewStartGrid = message.player.viewStartGrid;
     player.viewEndGrid = message.player.viewEndGrid;
+    player.smoothMoving = message.player.smoothMoving;
+    player.x = message.player.x;
+    player.y = message.player.y;
 
-
-    // if (player.smooth[0] === 0) {
-      player.x = message.player.x;
-      player.y = message.player.y;
-
-      // player.smooth = message.player.smooth;
-    // }
-    
+    for (var i=0; i>message.updatedGrids.length; i++) {
+      if (message.updatedGrids[i]) {
+        grids[message.updatedGrids.gridId] = message.updatedGrids;
+      }
+    }
+    //Send server player's movements    
     player.control();
     if (player.updated == true) {
       player.updated = false;
@@ -153,7 +164,6 @@ ws.onmessage = function(e) {
         info: player
       }));
     }
-
     //Executes all drawing
     player.camera();
   }
@@ -194,8 +204,10 @@ function Players(x, y, id, moves, gridId) {
   this.gridId = gridId;
   this.updated = false;
   this.smoothMoving = false;
-  this.smooth = [0, 0, 0, 0];
   this.updatedGrids = [];
+  this.building = false;
+  this.message = '';
+  this.buildGrids = [];
   this.viewStartGrid;
   this.viewEndGrid;
   this.canvasWidth = canvas.width;
@@ -203,30 +215,17 @@ function Players(x, y, id, moves, gridId) {
 
 
   this.control = function() {
+    this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
+    this.moves[1] = keyStates[39]||keyStates[68] ? this.moves[1]=true : this.moves[1]=false;
+    this.moves[2] = keyStates[40]||keyStates[83] ? this.moves[2]=true : this.moves[2]=false;
+    this.moves[3] = keyStates[37]||keyStates[65] ? this.moves[3]=true : this.moves[3]=false;
 
-    if (keyStates[38] || keyStates[87]) {
-      this.moves[0] = true;
+    if (this.moves[0] || this.moves[1] || this.moves[2] || this.moves[3]) {
+      this.build('close');
     }
-    else {
-      this.moves[0] = false;
-    }
-    if (keyStates[39] || keyStates[68]) {
-      this.moves[1] = true;
-    }
-    else {
-      this.moves[1] = false;
-    }
-    if (keyStates[40] || keyStates[83]) {
-      this.moves[2] = true;
-    }
-    else {
-      this.moves[2] = false;
-    }
-    if (keyStates[37] || keyStates[65]) {
-      this.moves[3] = true;
-    }
-    else {
-      this.moves[3] = false;
+
+    if (keyStates[13]) {
+      this.chat();
     }
   };
 
@@ -248,6 +247,45 @@ function Players(x, y, id, moves, gridId) {
 
     ctx.drawImage(head, this.x+7, this.y+7, 36, 36);
 
+  };
+
+  this.build = function(e) {
+    if (this.smoothMoving === false) {
+
+      this.buildGrids[0] = this.gridId-1;
+      this.buildGrids[1] = this.gridId+1;
+      this.buildGrids[2] = this.gridId-100;
+      this.buildGrids[3] = this.gridId+100;
+
+      if (e == 'toggle') {
+        if (this.building === false) {
+          this.building = true;
+          grids[this.buildGrids[0]].building = true;
+          grids[this.buildGrids[1]].building = true;
+          grids[this.buildGrids[2]].building = true;
+          grids[this.buildGrids[3]].building = true;
+        }
+
+        else if (this.building === true) {
+          this.building = false;
+          grids[this.buildGrids[0]].building = false;
+          grids[this.buildGrids[1]].building = false;
+          grids[this.buildGrids[2]].building = false;
+          grids[this.buildGrids[3]].building = false;
+        }
+      }
+
+      else if (e == 'close' && this.building === true) {
+        this.building = false;
+        grids[this.buildGrids[0]].building = false;
+        grids[this.buildGrids[1]].building = false;
+        grids[this.buildGrids[2]].building = false;
+        grids[this.buildGrids[3]].building = false;
+      }
+    }
+  };
+  this.chat = function() {
+    console.log('chat enabled');
   };
 };
 
@@ -295,7 +333,7 @@ var HUD = {
 
       for (var i=1; i<9; i++) {
         var slot = 'this.slot'.concat(i);
-        document.getElementsByClassName('slot')[i-1].innerHTML = eval(slot);
+        document.getElementsByClassName('slotValue')[i-1].innerHTML = eval(slot);
       }
     }
   },
@@ -309,6 +347,12 @@ var HUD = {
     }
   }
 }
+
+
+
+
+
+
 
 
 
@@ -345,6 +389,32 @@ function draw(index) {
   if (grids[index].owner === true) {
     ctx.drawImage(eval('crack'.concat(grids[index].cracks+1)), grids[index].x, grids[index].y, 50, 50);
   }
+
+  if (grids[index].building !== false) {
+    ctx.rect(grids[index].x, grids[index].y, 50, 50);
+    ctx.fillStyle = '#ffff66';
+    ctx.fill();
+
+    if (grids[index].gridId == player.buildGrids[0]) {
+      ctx.drawImage(rock1, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+    }
+    else if (grids[index].gridId == player.buildGrids[1]) {
+      ctx.drawImage(rock2, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      
+    }
+    else if (grids[index].gridId == player.buildGrids[2]) {
+      ctx.drawImage(rock3, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      
+    }
+    else if (grids[index].gridId == player.buildGrids[3]) {
+      ctx.drawImage(rock4, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+    }
+    else {
+      player.building = false;
+      grids[index].building = false;
+      player.build('close');
+    }
+  }
 }
 
 
@@ -353,13 +423,15 @@ function draw(index) {
 
 
 
-
-
+//Stop repeat keys
+var oneTimeBuild = false;
+var oneTimeChat = false;
 
 window.addEventListener('keydown', function(e) {
   // e.preventDefault();
   player.updated = true;
 
+  //Movement
   if (e.keyCode >= 37 && e.keyCode <= 40 || e.keyCode == 87 || e.keyCode == 83  || e.keyCode == 65  || e.keyCode == 68) {
     keyStates[37] = false;
     keyStates[38] = false;
@@ -371,13 +443,31 @@ window.addEventListener('keydown', function(e) {
     keyStates[67] = false;
     keyStates[e.keyCode] = true;
   }
+
+  //Chat
+  if (e.keyCode == 13 && oneTimeChat === false) {
+    oneTimeChat = true;
+    keyStates[e.keyCode] = true;
+  }
+
+  //Build meny
+  if (e.keyCode == 32 && oneTimeBuild === false && player.smoothMoving === false) {
+    player.build('toggle');
+    oneTimeBuild = true;
+  }
 });
 window.addEventListener('keyup', function(e) {
+  oneTimeBuild = false;
   // e.preventDefault();
-    keyStates[e.keyCode] = false;
+  keyStates[e.keyCode] = false;
 
   player.updated = true;
 });
+
+
+
+
+
 
 
 
