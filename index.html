@@ -103,7 +103,6 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 var ctx = canvas.getContext('2d');
 ctx.textAlign='center';
-ctx.font='30px Arial';
 
 
 window.addEventListener("resize", function() {
@@ -384,6 +383,7 @@ function draw(index) {
   //Message
   if (grids[index].message) {
     ctx.fillStyle = 'white';
+    ctx.font='30px Arial';
     ctx.fillText(grids[index].message, grids[index].x+25, grids[index].y);
   }
 
