@@ -102,8 +102,8 @@ var canvas = document.getElementById('game');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 var ctx = canvas.getContext('2d');
-ctx.textAlign='center';
-
+ctx.textAlign = 'center';
+ctx.font = '30px Shrikhand';
 
 window.addEventListener("resize", function() {
   canvas.width = window.innerWidth;
@@ -355,21 +355,6 @@ function draw(index) {
 
   ctx.beginPath();
 
-  //Player or their path
-  if (grids[index].occupied === true && grids[index].owner != player.id) {
-    ctx.rect(grids[index].x, grids[index].y, 50, 50);
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
-    ctx.fill();
-    ctx.save();
-    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
-    ctx.restore();
-  }
-  else if (typeof grids[index].owner === 'number') {
-    ctx.rect(grids[index].x, grids[index].y, 50, 50);
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
-    ctx.fill();
-  }
-
   //Textured rocks
   if (grids[index].rock || grids[index].owner === true) {
     ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
@@ -380,21 +365,39 @@ function draw(index) {
     }
   }
 
+  //Player or their path
+  if (grids[index].occupied === true && grids[index].owner != player.id) {
+    ctx.rect(grids[index].x, grids[index].y, 50, 50);
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
+    ctx.fill();
+    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
+  }
+  else if (typeof grids[index].owner === 'number') {
+    ctx.rect(grids[index].x, grids[index].y, 50, 50);
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
+    ctx.fill();
+  }
+
   //Message
   if (grids[index].message) {
+    ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
-    ctx.font='30px Arial';
     ctx.fillText(grids[index].message, grids[index].x+25, grids[index].y);
   }
 
   //Chat bar
   if (player.chatting === true && index == player.gridId) {
+    ctx.globalCompositeOperation = 'source-over';
     ctx.rect(grids[player.gridId].x, grids[player.gridId].y, 50, -25);
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'rgba(0, 0, 0, .5)';
     ctx.fill();
+    
+    ctx.textAlign = 'center';
+    ctx.font = '30px Shrikhand';
     ctx.fillStyle = 'white';
     ctx.fillText(player.message, grids[index].x+25, grids[index].y);
   }
+  ctx.globalCompositeOperation = 'destination-over';
 
   //Build menu 
   if (grids[index].building === true) {
@@ -464,7 +467,7 @@ window.addEventListener('keydown', function(e) {
   }
 
   if (player.chatting === true && e.keyCode != 13) {
-    if (e.keyCode >= 48 && e.keyCode <= 90) {
+    if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32) {
       player.message += e.key;
     }
     else if (e.keyCode == 8) {
@@ -473,7 +476,7 @@ window.addEventListener('keydown', function(e) {
   }
 
   //Build menu
-  if (e.keyCode == 32 && oneTimeBuild === false && player.smoothMoving === false) {
+  if (e.keyCode == 32 && oneTimeBuild === false && player.smoothMoving === false && player.chatting === false) {
     player.build('toggle');
     oneTimeBuild = true;
   }
