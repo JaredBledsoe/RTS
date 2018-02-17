@@ -5,6 +5,7 @@
   body {
     margin: 0;
     user-select: none;
+    overflow: hidden;
   }
   img {
     position: absolute;
@@ -63,6 +64,8 @@
 <img id="rock4" src="http://rtstextures.bitballoon.com/rock4.png">
 <img id="rock5" src="https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg">
 
+<img id="brick1" src="http://rtstextures.bitballoon.com/rock5.png">
+
 <img id="crack1" src="http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png">
 <img id="crack2" src="http://www.textures4photoshop.com/tex/thumbs/cracked-wall-PNG-texture-thumb24.png">
 <img id="crack3" src="http://www.textures4photoshop.com/tex/thumbs/broken-mirror-with-glass-shards-png-608.png">
@@ -98,13 +101,15 @@ var ws = new WebSocket(HOST);
 var canvas = document.getElementById('game');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+var ctx = canvas.getContext('2d');
+ctx.textAlign='center';
+ctx.font='30px Arial';
+
 
 window.addEventListener("resize", function() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;  
 });
-
-var ctx = canvas.getContext('2d');
 
 var keyStates = [];
 var grids = [];
@@ -112,16 +117,19 @@ var player;
 var arrow = document.getElementById('arrow');
 var head = document.getElementById('head');
 
-var rock1 = document.getElementById('rock1');
-var rock2 = document.getElementById('rock2');
-var rock3 = document.getElementById('rock3');
-var rock4 = document.getElementById('rock4');
-var rock5 = document.getElementById('rock5');
+var rocks = [document.getElementById('rock1'), document.getElementById('rock2'), document.getElementById('rock3'), document.getElementById('rock4'), document.getElementById('rock5')];
+// var 2 = document.getElementById('rock2');
+// var 3 = document.getElementById('rock3');
+// var 4 = document.getElementById('rock4');
+// var 5 = document.getElementById('rock5');
+
+var brick1 = document.getElementById('brick1');
 
 var crack1 = document.getElementById('crack1');
 var crack2 = document.getElementById('crack2');
 var crack3 = document.getElementById('crack3');
 
+var characters = /^[_A-z0-9]*((-|\s)*[_A-z0-9])*$/g;
 // window.onunload = function () {
 //  ws.send(JSON.stringify({
 //      type: 'close',
@@ -206,6 +214,7 @@ function Players(x, y, id, moves, gridId) {
   this.smoothMoving = false;
   this.updatedGrids = [];
   this.building = false;
+  this.chatting = false;
   this.message = '';
   this.buildGrids = [];
   this.viewStartGrid;
@@ -215,17 +224,14 @@ function Players(x, y, id, moves, gridId) {
 
 
   this.control = function() {
-    this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
-    this.moves[1] = keyStates[39]||keyStates[68] ? this.moves[1]=true : this.moves[1]=false;
-    this.moves[2] = keyStates[40]||keyStates[83] ? this.moves[2]=true : this.moves[2]=false;
-    this.moves[3] = keyStates[37]||keyStates[65] ? this.moves[3]=true : this.moves[3]=false;
-
-    if (this.moves[0] || this.moves[1] || this.moves[2] || this.moves[3]) {
-      this.build('close');
+    if (!this.building && !this.chatting) {
+      this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
+      this.moves[1] = keyStates[39]||keyStates[68] ? this.moves[1]=true : this.moves[1]=false;
+      this.moves[2] = keyStates[40]||keyStates[83] ? this.moves[2]=true : this.moves[2]=false;
+      this.moves[3] = keyStates[37]||keyStates[65] ? this.moves[3]=true : this.moves[3]=false;
+      this.moves[4] = keyStates[49] ? this.moves[4]=true : this.moves[4]=false;
     }
-
-    if (keyStates[13]) {
-      this.chat();
+    else if (this.building) {
     }
   };
 
@@ -285,7 +291,21 @@ function Players(x, y, id, moves, gridId) {
     }
   };
   this.chat = function() {
-    console.log('chat enabled');
+    if (this.chatting === false) {
+      this.chatting = true;
+    }
+    else if (this.chatting === true) {
+      console.log(this.message);
+
+      ws.send(JSON.stringify({
+        type: 'chat',
+        id: this.id,
+        info: this.message
+      })); 
+
+      this.message = '';
+      this.chatting = false;
+    }
   };
 };
 
@@ -308,45 +328,20 @@ var HUD = {
   slot7: 0,
   slot8: 0,
 
-  draw: function(selectSlot, claimGrid) {
-    if (selectSlot) {
-      for (var i=0; i<8; i++) {
-        if (i != selectSlot-49) {
-          document.getElementsByClassName('slot')[i].classList.remove('select');    
-        }
-        else if (i == selectSlot-49) {
-          if (document.getElementsByClassName('slot')[i].classList.contains('select')) {
-            document.getElementsByClassName('slot')[i].classList.remove('select');    
-          }
-          else {
-            document.getElementsByClassName('slot')[i].classList.add('select');    
-          }
-        }
-      }
-    }
-    else if (claimGrid) {
-      claimGrid <= 75 ? this.slot1++ : 
-      claimGrid <= 95 ? this.slot2++ : 
-      claimGrid <= 99 ? this.slot3++ :
-      claimGrid == 100 ? this.slot4++ : this.slot5++;
-    
+  draw: function(claimGrid) {
+    claimGrid <= 750 ? this.slot1++ : 
+    claimGrid <= 950 ? this.slot2++ : 
+    claimGrid <= 990 ? this.slot3++ :
+    claimGrid <= 997 ? this.slot4++ : this.slot5++;
+  
 
-      for (var i=1; i<9; i++) {
-        var slot = 'this.slot'.concat(i);
-        document.getElementsByClassName('slotValue')[i-1].innerHTML = eval(slot);
-      }
-    }
-  },
-
-  slotUpdater: function() {
-    for (var i=1; i<8; i++) {
-      var slot = 'slot'.concat(i);
-
-      this.slot.addEventListener('change', function() {
-      });
+    for (var i=1; i<9; i++) {
+      var slot = 'this.slot'.concat(i);
+      document.getElementsByClassName('slotValue')[i-1].innerHTML = eval(slot);
     }
   }
 }
+
 
 
 
@@ -361,19 +356,9 @@ function draw(index) {
 
   ctx.beginPath();
 
-  //Textured rocks
-  if (grids[index].owner === false || grids[index].contesting === true) {
-    var rock = grids[index].rock <= 75 ? rock1 : 
-               grids[index].rock <= 95 ? rock2 : 
-               grids[index].rock <= 99 ? rock3 :
-               grids[index].rock == 100 ? rock4 : rock5;
-
-      ctx.drawImage(rock, grids[index].x, grids[index].y, 50, 50);
-  }
-
   //Player or their path
-  ctx.rect(grids[index].x, grids[index].y, 50, 50);
   if (grids[index].occupied === true && grids[index].owner != player.id) {
+    ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
     ctx.save();
@@ -381,33 +366,55 @@ function draw(index) {
     ctx.restore();
   }
   else if (typeof grids[index].owner === 'number') {
+    ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
   }
 
-  //Rock being mined
-  if (grids[index].owner === true) {
-    ctx.drawImage(eval('crack'.concat(grids[index].cracks+1)), grids[index].x, grids[index].y, 50, 50);
+  //Textured rocks
+  if (grids[index].rock || grids[index].owner === true) {
+    ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
+
+    //Rock being mined
+    if (grids[index].contesting === true) {
+      ctx.drawImage(eval('crack'.concat(grids[index].cracks+1)), grids[index].x, grids[index].y, 50, 50);
+    }
   }
 
-  if (grids[index].building !== false) {
+  //Message
+  if (grids[index].message) {
+    ctx.fillStyle = 'white';
+    ctx.fillText(grids[index].message, grids[index].x+25, grids[index].y);
+  }
+
+  //Chat bar
+  if (player.chatting === true && index == player.gridId) {
+    ctx.rect(grids[player.gridId].x, grids[player.gridId].y, 50, -25);
+    ctx.fillStyle = 'black';
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.fillText(player.message, grids[index].x+25, grids[index].y);
+  }
+
+  //Build menu 
+  if (grids[index].building === true) {
     ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fillStyle = '#ffff66';
     ctx.fill();
 
     if (grids[index].gridId == player.buildGrids[0]) {
-      ctx.drawImage(rock1, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      ctx.drawImage(rocks[0], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
     }
     else if (grids[index].gridId == player.buildGrids[1]) {
-      ctx.drawImage(rock2, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      ctx.drawImage(rocks[1], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
       
     }
     else if (grids[index].gridId == player.buildGrids[2]) {
-      ctx.drawImage(rock3, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      ctx.drawImage(rocks[2], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
       
     }
     else if (grids[index].gridId == player.buildGrids[3]) {
-      ctx.drawImage(rock4, grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      ctx.drawImage(rocks[3], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
     }
     else {
       player.building = false;
@@ -425,7 +432,6 @@ function draw(index) {
 
 //Stop repeat keys
 var oneTimeBuild = false;
-var oneTimeChat = false;
 
 window.addEventListener('keydown', function(e) {
   // e.preventDefault();
@@ -444,18 +450,35 @@ window.addEventListener('keydown', function(e) {
     keyStates[e.keyCode] = true;
   }
 
-  //Chat
-  if (e.keyCode == 13 && oneTimeChat === false) {
-    oneTimeChat = true;
-    keyStates[e.keyCode] = true;
+  if (e.keyCode == 49) {
+    keyStates[49] = true;
   }
 
-  //Build meny
+  //Chat
+  if (e.keyCode == 13 && player.chatting === false) {
+    keyStates[e.keyCode] = true;
+    player.chat();
+  }
+  else if (e.keyCode == 13 && player.chatting === true) {
+    player.chat();
+  }
+
+  if (player.chatting === true && e.keyCode != 13) {
+    if (e.keyCode >= 48 && e.keyCode <= 90) {
+      player.message += e.key;
+    }
+    else if (e.keyCode == 8) {
+      player.message = player.message.slice(0, -1);
+    }
+  }
+
+  //Build menu
   if (e.keyCode == 32 && oneTimeBuild === false && player.smoothMoving === false) {
     player.build('toggle');
     oneTimeBuild = true;
   }
 });
+
 window.addEventListener('keyup', function(e) {
   oneTimeBuild = false;
   // e.preventDefault();
