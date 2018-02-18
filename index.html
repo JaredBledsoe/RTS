@@ -1,19 +1,23 @@
 <html>
 <head>
 <link href="https://fonts.googleapis.com/css?family=Shrikhand" rel="stylesheet">
-<style>
+<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'><style>
+
   body {
     margin: 0;
     user-select: none;
     overflow: hidden;
+    background-image: url('https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg');
+    background-repeat: repeat;
+    background-size: 20%;
   }
   img {
     position: absolute;
     display: none;
   }
   canvas {
-    background-image: url('http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kXMzpPrcI/AAAAAAAAAbY/UrjCymSWtiU/s1600/461223182.jpg');
-  }
+/*    background-image: url('http://2.bp.blogspot.com/_Ql_VVzn3j9g/R9kXMzpPrcI/AAAAAAAAAbY/UrjCymSWtiU/s1600/461223182.jpg');
+*/  }
   #hud {
     position: absolute;
     left: 50%;
@@ -47,22 +51,17 @@
     background-color: rgba(255, 255, 255, .25);
   }
 
-  #test {
-    width: 50px;
-    height: 50px;
-    background-color: red;
-    position: absolute;
-  }
+
 </style>
 </head>
 <body>
 <img id="head" src="http://lawebloca.com/wp-content/uploads/2012/10/minecraft-creeper-face1.jpg">
 
-<img id="rock1" src="http://rtstextures.bitballoon.com/rock1.png">
-<img id="rock2" src="http://rtstextures.bitballoon.com/rock2.png">
-<img id="rock3" src="http://rtstextures.bitballoon.com/rock3.png">
-<img id="rock4" src="http://rtstextures.bitballoon.com/rock4.png">
-<img id="rock5" src="https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg">
+<img id="rock1" src="http://rtstextures.bitballoon.com/rock1.jpg">
+<img id="rock2" src="http://rtstextures.bitballoon.com/rock2.jpg">
+<img id="rock3" src="http://rtstextures.bitballoon.com/rock3.jpg">
+<img id="rock4" src="http://rtstextures.bitballoon.com/rock4.jpg">
+<img id="rock5" src="http://rtstextures.bitballoon.com/lava.jpg">
 
 <img id="brick1" src="http://rtstextures.bitballoon.com/rock5.png">
 
@@ -75,10 +74,10 @@
 <!-- <div id="controls"><image src="public/images/controls.png"></div>
  -->
 <div id="hud">
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.png')"><p class="slotValue">0</p></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.png')"><p class="slotValue">0</p></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.png')"><p class="slotValue">0</p></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.png')"><p class="slotValue">0</p></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.jpg')"><p class="slotValue">0</p></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.jpg')"><p class="slotValue">0</p></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.jpg')"><p class="slotValue">0</p></div>
+  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.jpg')"><p class="slotValue">0</p></div>
   <div class="slot"><p class="slotValue">0</p></div>
   <div class="slot"><p class="slotValue">0</p></div>
   <div class="slot"><p class="slotValue">0</p></div>
@@ -117,10 +116,6 @@ var arrow = document.getElementById('arrow');
 var head = document.getElementById('head');
 
 var rocks = [document.getElementById('rock1'), document.getElementById('rock2'), document.getElementById('rock3'), document.getElementById('rock4'), document.getElementById('rock5')];
-// var 2 = document.getElementById('rock2');
-// var 3 = document.getElementById('rock3');
-// var 4 = document.getElementById('rock4');
-// var 5 = document.getElementById('rock5');
 
 var brick1 = document.getElementById('brick1');
 
@@ -158,28 +153,13 @@ ws.onmessage = function(e) {
     player.y = message.player.y;
     player.stones = message.player.stones;
 
-    for (var i=0; i>message.updatedGrids.length; i++) {
-      if (message.updatedGrids[i]) {
-        grids[message.updatedGrids.gridId] = message.updatedGrids;
-      }
-    }
-    //Send server player's movements    
-    player.control();
-    if (player.updated == true) {
-      player.updated = false;
-      ws.send(JSON.stringify({
-        type: 'playerUpdate',
-        info: player
-      }));
-    }
-    //Executes all drawing
-    player.camera();
-  }
 
-  //Player claimed a grid
-  // else if (message.type == 'claimGrid') {
-  //   HUD.draw(message.grid.rock);
-  // }
+    for (var i=0; i<message.updatedGrids.length; i++) {
+      grids[message.updatedGrids.gridId] = message.updatedGrids;
+    }
+
+    player.control();
+  }
 
   //Player just joined
   else if (message.type == 'initPlayer') {
@@ -208,11 +188,11 @@ function Players(x, y, id, moves, gridId) {
   this.x = x;
   this.y = y;
   this.id = id;
-  this.moves = moves;
+  this.moves = [false, false, false, false, false];
   this.gridId = gridId;
-  this.updated = false;
   this.smoothMoving = false;
   this.updatedGrids = [];
+  this.updated = false;
   this.building = false;
   this.chatting = false;
   this.message = '';
@@ -226,7 +206,6 @@ function Players(x, y, id, moves, gridId) {
 
 
   this.control = function() {
-    this.HUD();
 
     if (!this.building && !this.chatting) {
       this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
@@ -255,8 +234,18 @@ function Players(x, y, id, moves, gridId) {
         this.build(3);
       }
     }
-  };
 
+    if (this.updated === true) {
+      this.updated = false;
+      ws.send(JSON.stringify({
+        type: 'playerUpdate',
+        info: this
+      }));
+    }
+
+    this.HUD();
+    player.camera();
+  };
   this.camera = function() {
 
     ctx.setTransform(1, 0, 0, 1, -this.x+canvas.width/2, -this.y+canvas.height/2);
@@ -302,25 +291,18 @@ function Players(x, y, id, moves, gridId) {
         }
       }
       else if (typeof(e) == 'number') {
-        if (e == 0) {
-          this.buildTab = 0;
-          this.moves[4] = 0;
-        }
-        else if (e == 1) {
-          this.buildTab = 1;
-          this.moves[4] = 1;
-        }
-        else if (e == 2) {
-          this.buildTab = 2;
-          this.moves[4] = 2;
-        }
-        else if (e == 3) {
-          this.buildTab = 3;
-          this.moves[4] = 3;
+        this.moves[4] = e == 0 ? 0 :
+                        e == 1 ? 1 : 
+                        e == 2 ? 2 :
+                        e == 3 ? 3 : null;
+
+        if (grids[this.gridId].owner != this.id) {
+          this.build('close');
         }
       }
       else if (e == 'close' && this.building === true) {
         this.building = false;
+        this.moves[4] = null;
         grids[this.buildGrids[0]].building = false;
         grids[this.buildGrids[1]].building = false;
         grids[this.buildGrids[2]].building = false;
@@ -333,8 +315,6 @@ function Players(x, y, id, moves, gridId) {
       this.chatting = true;
     }
     else if (this.chatting === true) {
-      console.log(this.message);
-
       ws.send(JSON.stringify({
         type: 'chat',
         id: this.id,
@@ -350,51 +330,8 @@ function Players(x, y, id, moves, gridId) {
     document.getElementsByClassName('slotValue')[1].innerHTML = this.stones[1];
     document.getElementsByClassName('slotValue')[2].innerHTML = this.stones[2];
     document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
-
   };
 };
-
-
-
-
-
-
-
-
-
-
-// var HUD = {
-
-//   draw: function(claimGrid) {
-//     if (claimGrid <= 750) {
-//       document.getElementsByClassName('slotValue')[0].innerHTML = this.slot1;
-
-//     }
-//     else if (claimGrid <= 950) {
-//       document.getElementsByClassName('slotValue')[1].innerHTML = this.slot2;
-//     }
-//     else if (claimGrid <= 980) {
-//       document.getElementsByClassName('slotValue')[2].innerHTML = this.slot3;
-//     }
-//     else if (claimGrid <= 990) {
-//       this.slot4++;
-//       document.getElementsByClassName('slotValue')[3].innerHTML = this.slot4;
-//     }
-
-//     // claimGrid <= 750 ? this.slot1++ : 
-//     // claimGrid <= 950 ? this.slot2++ : 
-//     // claimGrid <= 980 ? this.slot3++ :
-//     // claimGrid <= 990 ? this.slot4++ : this.slot5++;
-  
-
-//     // for (var i=1; i<9; i++) {
-//     //   var slot = 'this.slot'.concat(i);
-//     //   console.log(slot);
-//     //   document.getElementsByClassName('slotValue')[i-1].innerHTML = eval(slot);
-//     // }
-//   }
-// }
-
 
 
 
@@ -411,35 +348,43 @@ function draw(index) {
 
   //Build menu 
   if (grids[index].building === true && player.buildGrids.indexOf(index) != -1) {
+      ctx.font = '12px Shrikhand';
+      ctx.fillStyle = 'white';
 
     if (grids[index].gridId == player.buildGrids[0]) {
-      ctx.drawImage(rocks[0], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      ctx.fillText('10', grids[index].x+25, grids[index].y+20);
+      ctx.fillText('DIRT', grids[index].x+25, grids[index].y+35);
+      ctx.drawImage(rocks[0], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
     }
     else if (grids[index].gridId == player.buildGrids[1]) {
-      ctx.drawImage(rocks[1], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
-      
+      ctx.fillText('5', grids[index].x+25, grids[index].y+20);
+      ctx.fillText('STONE', grids[index].x+25, grids[index].y+35);
+      ctx.drawImage(rocks[1], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
     }
     else if (grids[index].gridId == player.buildGrids[2]) {
-      ctx.drawImage(rocks[2], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      ctx.fillText('3', grids[index].x+25, grids[index].y+20);
+      ctx.fillText('GOLD', grids[index].x+25, grids[index].y+35);
+      ctx.drawImage(rocks[2], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
       
     }
     else if (grids[index].gridId == player.buildGrids[3]) {
-      ctx.drawImage(rocks[3], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      ctx.fillText('1', grids[index].x+25, grids[index].y+20);
+      ctx.fillText('GARNET', grids[index].x+25, grids[index].y+35);
+      ctx.drawImage(rocks[3], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
     }
 
     ctx.rect(grids[index].x, grids[index].y, 50, 50);
-    ctx.fillStyle = '#ffff66';
+    ctx.fillStyle = '#00ccff';
     ctx.fill();
   }
 
   //Textured rocks
   if (grids[index].rock || grids[index].owner === true) {
-    ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
-
     //Rock being mined
     if (grids[index].contesting === true) {
       ctx.drawImage(eval('crack'.concat(grids[index].cracks+1)), grids[index].x, grids[index].y, 50, 50);
     }
+    ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
   }
 
   //Player or their path
@@ -468,16 +413,22 @@ function draw(index) {
     ctx.rect(grids[player.gridId].x, grids[player.gridId].y, 50, -25);
     ctx.fillStyle = 'rgba(0, 0, 0, .5)';
     ctx.fill();
+    ctx.font = '15px Shrikhand';
+    ctx.fillStyle = 'white';
+    ctx.fillText('ENTER = Send', grids[index].x+25, grids[index].y+55);
+    ctx.fillText('ESC = Close', grids[index].x+25, grids[index].y+70);
+
     
     ctx.textAlign = 'center';
-    ctx.font = '30px Shrikhand';
+    ctx.font = '25px Shrikhand';
     ctx.fillStyle = 'white';
     ctx.fillText(player.message, grids[index].x+25, grids[index].y);
   }
-  ctx.globalCompositeOperation = 'destination-over';
-
-  
+  ctx.globalCompositeOperation = 'destination-over';  
 }
+
+
+
 
 
 
@@ -490,7 +441,6 @@ var oneTimeBuild = false;
 
 window.addEventListener('keydown', function(e) {
   // e.preventDefault();
-  player.updated = true;
 
   //Movement
   if (e.keyCode >= 37 && e.keyCode <= 40 || e.keyCode == 87 || e.keyCode == 83  || e.keyCode == 65  || e.keyCode == 68) {
@@ -508,6 +458,11 @@ window.addEventListener('keydown', function(e) {
   if (e.keyCode == 49) {
     keyStates[49] = true;
   }
+  else if (e.keyCode == 27) {
+    player.message = '';
+    player.chatting = false;
+    player.build('close');
+  }
 
   //Chat
   if (e.keyCode == 13 && player.chatting === false) {
@@ -517,7 +472,6 @@ window.addEventListener('keydown', function(e) {
   else if (e.keyCode == 13 && player.chatting === true) {
     player.chat();
   }
-
   if (player.chatting === true && e.keyCode != 13) {
     if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32) {
       player.message += e.key;
@@ -532,13 +486,14 @@ window.addEventListener('keydown', function(e) {
     player.build('toggle');
     oneTimeBuild = true;
   }
+
+  player.updated = true;
 });
 
 window.addEventListener('keyup', function(e) {
   oneTimeBuild = false;
   // e.preventDefault();
   keyStates[e.keyCode] = false;
-
   player.updated = true;
 });
 
