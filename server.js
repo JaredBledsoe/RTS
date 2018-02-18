@@ -4,12 +4,12 @@ const SocketServer = require('ws').Server;
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 
-const app = express(); 
-// app.use('/', express.static('./public'));
+//const app = express(); 
+//app.use('/', express.static('./public'));
 
 const INDEX = path.join(__dirname, 'index.html');
 const server = express()
-  .use((req, res) => res.sendFile(INDEX) )
+  .use("/", (req, res) => res.sendFile(INDEX) )
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 const wss = new SocketServer({ server });
 
@@ -92,8 +92,13 @@ wss.on('connection', function(ws) {
 			}
 		
 			//Player sent message
+			else if (message.type == 'build') {
+				grids[message.info[0]].reset();
+				// grids[message.info[0].rock = message.info[1];
+			}
+
+			//Player sent message
 			else if (message.type == 'chat') {
-				console.log(players[currentId].gridId);
 				grids[players[currentId].gridId].chat(message.info);
 			}
 
@@ -172,6 +177,7 @@ function Player() {
 	this.rgb = [Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)];
 	this.contesting = false;
 	this.smooth = [0, 0, 0, 0];
+	this.stones = [0, 0, 0, 0];
 	this.canvasWidth;
 	this.canvasHeight;
 	this.smoothMoving = false;
@@ -186,31 +192,30 @@ Player.prototype.update = function() {
 
 		//WASD or arrows
 		if (this.contesting === false) {
-			if (this.moves[4]) {
-				grids[this.gridId].build();
-			}
-
-			if (this.moves[0] && grids[this.gridId-1].rock < 997 && grids[this.gridId-1].occupied === false) {
+			if (this.moves[0] && grids[this.gridId-1].rock < 990 && grids[this.gridId-1].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId-1].own(index, this.id);
 				this.smooth = ['up', grids[this.gridId-1].delay, grids[this.gridId-1].x, grids[this.gridId-1].y];
 			}
-			else if (this.moves[1] && grids[this.gridId+100].rock < 997 && grids[this.gridId+100].occupied === false) {
+			else if (this.moves[1] && grids[this.gridId+100].rock < 990 && grids[this.gridId+100].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId+100].own(index, this.id);
 				this.smooth = ['right', grids[this.gridId+100].delay, grids[this.gridId+100].x, grids[this.gridId+100].y];
 			}
-			else if (this.moves[2] && grids[this.gridId+1].rock < 997 && grids[this.gridId+1].occupied === false) {
+			else if (this.moves[2] && grids[this.gridId+1].rock < 990 && grids[this.gridId+1].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId+1].own(index, this.id);
 				this.smooth = ['down', grids[this.gridId+1].delay, grids[this.gridId+1].x, grids[this.gridId+1].y];
 			}
-			else if (this.moves[3] && grids[this.gridId-100].rock < 997 && grids[this.gridId-100].occupied === false) {
+			else if (this.moves[3] && grids[this.gridId-100].rock < 990 && grids[this.gridId-100].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId-100].own(index, this.id);
 				this.smooth = ['left', grids[this.gridId-100].delay, grids[this.gridId-100].x, grids[this.gridId-100].y];
 			}
-			else {
+			else if (this.moves[4] >= 0) {
+				if (this.stones[this.moves[4]]-5 >= 0) {
+					grids[this.gridId].build(this.moves[4]);
+				}
 			}
 		}
 
@@ -243,7 +248,7 @@ Player.prototype.update = function() {
 
 		//Which blocks to show, based on position
 		this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-196 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-196 : 0;
-		this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 < grids.length ? this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 : 0;
+		this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 < grids.length ? this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 : 10000;
 	}
 	catch (e) {
 		console.log(e);
@@ -281,14 +286,14 @@ function Grid(x, y) {
 
 	this.rock <= 750 ? this.delay = 300 :
 	this.rock <= 950 ? this.delay = 600 :
-	this.rock <= 990 ? this.delay = 900 : 
-	this.rock <= 997 ? this.delay = 2000 :
+	this.rock <= 980 ? this.delay = 900 : 
+	this.rock <= 990 ? this.delay = 2000 :
 	this.rock <= 1000 ? this.delay = 0 : this.delay = 0;
 
 	this.rock <= 750 ? this.image = 0 :
 	this.rock <= 950 ? this.image = 1 :
-	this.rock <= 990 ? this.image = 2 : 
-	this.rock <= 997 ? this.image = 3 : 
+	this.rock <= 980 ? this.image = 2 : 
+	this.rock <= 990 ? this.image = 3 : 
 	this.rock <= 1000 ? this.image = 4 : this.image = 4;
 };
 Grid.prototype.own = function(index, id) {	
@@ -311,6 +316,19 @@ Grid.prototype.own = function(index, id) {
 
 			setTimeout(() => {
 				if (players[index]) {
+					if (this.rock <= 750) {
+						players[index].stones[0]++;
+					}
+					else if (this.rock <= 950) {
+						players[index].stones[1]++;
+					}
+					else if (this.rock <= 980) {
+						players[index].stones[2]++;
+					}
+					else if (this.rock <= 990) {
+						players[index].stones[3]++;
+					}
+
 					this.rock = 0;
 					this.owner = id;
 					this.rgb = players[index].rgb;
@@ -327,10 +345,10 @@ Grid.prototype.own = function(index, id) {
 					players[index].y = this.y;
 					players[index].contesting = false;
 
-					clients[index].send(JSON.stringify({
-						type: 'claimGrid',
-						grid: this
-					}));				
+					// clients[index].send(JSON.stringify({
+					// 	type: 'claimGrid',
+					// 	rock: this
+					// }));				
 				}
 			},this.delay);
 		}
@@ -353,31 +371,33 @@ Grid.prototype.own = function(index, id) {
 		console.log(e);
 	}
 };
-Grid.prototype.build = function() {
-	this.rock = 102;
+Grid.prototype.build = function(rock) {
+	var rock = rock == 0 ? 750 : rock  == 1 ? 950 : rock == 2 ? 980 : rock == 3 ? 990 : 0;
+	this.reset(rock);
+
 	updatedGrids.push(this);
 };
-Grid.prototype.reset = function() {
+Grid.prototype.reset = function(rock) {
 	try {
 		this.owner = false;
 		this.gridId = this.y/50 + (this.x/50 * 100);
 		this.rgb;
 		this.occupied = false;
-		this.rock = Math.floor((Math.random()*1000)+1);
+		this.rock = rock ? rock : Math.floor((Math.random()*1000)+1);
 		this.delay;
 		this.cracks = 0;
 		this.contesting = false;
 
 		this.rock <= 750 ? this.delay = 300 :
 		this.rock <= 950 ? this.delay = 600 :
-		this.rock <= 990 ? this.delay = 900 : 
-		this.rock <= 997 ? this.delay = 2000 :
+		this.rock <= 980 ? this.delay = 900 : 
+		this.rock <= 990 ? this.delay = 2000 :
 		this.rock <= 1000 ? this.delay = 0 : this.delay = 0;
 
 		this.rock <= 750 ? this.image = 00 :
 		this.rock <= 950 ? this.image = 1 :
-		this.rock <= 990 ? this.image = 2 : 
-		this.rock <= 997 ? this.image = 3 : 
+		this.rock <= 980 ? this.image = 2 : 
+		this.rock <= 990 ? this.image = 3 : 
 		this.rock <= 1000 ? this.image = 4 : this.image = 4;
 		updatedGrids.push(this);
 	}

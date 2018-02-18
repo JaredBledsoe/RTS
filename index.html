@@ -156,6 +156,7 @@ ws.onmessage = function(e) {
     player.smoothMoving = message.player.smoothMoving;
     player.x = message.player.x;
     player.y = message.player.y;
+    player.stones = message.player.stones;
 
     for (var i=0; i>message.updatedGrids.length; i++) {
       if (message.updatedGrids[i]) {
@@ -176,9 +177,9 @@ ws.onmessage = function(e) {
   }
 
   //Player claimed a grid
-  else if (message.type == 'claimGrid') {
-    HUD.draw(undefined, message.grid.rock);
-  }
+  // else if (message.type == 'claimGrid') {
+  //   HUD.draw(message.grid.rock);
+  // }
 
   //Player just joined
   else if (message.type == 'initPlayer') {
@@ -216,6 +217,8 @@ function Players(x, y, id, moves, gridId) {
   this.chatting = false;
   this.message = '';
   this.buildGrids = [];
+  this.buildTab = false
+  this.stones = [0, 0, 0, 0];
   this.viewStartGrid;
   this.viewEndGrid;
   this.canvasWidth = canvas.width;
@@ -223,6 +226,8 @@ function Players(x, y, id, moves, gridId) {
 
 
   this.control = function() {
+    this.HUD();
+
     if (!this.building && !this.chatting) {
       this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
       this.moves[1] = keyStates[39]||keyStates[68] ? this.moves[1]=true : this.moves[1]=false;
@@ -231,6 +236,24 @@ function Players(x, y, id, moves, gridId) {
       this.moves[4] = keyStates[49] ? this.moves[4]=true : this.moves[4]=false;
     }
     else if (this.building) {
+      this.moves[0] = false;
+      this.moves[1] = false;
+      this.moves[2] = false;
+      this.moves[3] = false;
+      this.moves[4] = false;
+
+      if (keyStates[38]||keyStates[87]) {
+        this.build(0);
+      }
+      else if (keyStates[39]||keyStates[68]) {
+        this.build(1);
+      }
+      else if (keyStates[40]||keyStates[83]) {
+        this.build(2);
+      }
+      else if (keyStates[37]||keyStates[65]) {
+        this.build(3);
+      }
     }
   };
 
@@ -246,21 +269,20 @@ function Players(x, y, id, moves, gridId) {
         
     ctx.clearRect(player.x-canvas.width/2, player.y-canvas.height/2, canvas.width, canvas.height);
 
+    ctx.drawImage(head, this.x+7, this.y+7, 36, 36);
+
     for (var i=this.viewStartGrid; i<this.viewEndGrid; i++) {
       draw(i);
     }
-
-    ctx.drawImage(head, this.x+7, this.y+7, 36, 36);
-
   };
 
   this.build = function(e) {
     if (this.smoothMoving === false) {
 
       this.buildGrids[0] = this.gridId-1;
-      this.buildGrids[1] = this.gridId+1;
-      this.buildGrids[2] = this.gridId-100;
-      this.buildGrids[3] = this.gridId+100;
+      this.buildGrids[1] = this.gridId+100;
+      this.buildGrids[2] = this.gridId+1;
+      this.buildGrids[3] = this.gridId-100;
 
       if (e == 'toggle') {
         if (this.building === false) {
@@ -279,7 +301,24 @@ function Players(x, y, id, moves, gridId) {
           grids[this.buildGrids[3]].building = false;
         }
       }
-
+      else if (typeof(e) == 'number') {
+        if (e == 0) {
+          this.buildTab = 0;
+          this.moves[4] = 0;
+        }
+        else if (e == 1) {
+          this.buildTab = 1;
+          this.moves[4] = 1;
+        }
+        else if (e == 2) {
+          this.buildTab = 2;
+          this.moves[4] = 2;
+        }
+        else if (e == 3) {
+          this.buildTab = 3;
+          this.moves[4] = 3;
+        }
+      }
       else if (e == 'close' && this.building === true) {
         this.building = false;
         grids[this.buildGrids[0]].building = false;
@@ -306,6 +345,13 @@ function Players(x, y, id, moves, gridId) {
       this.chatting = false;
     }
   };
+  this.HUD = function() {
+    document.getElementsByClassName('slotValue')[0].innerHTML = this.stones[0];
+    document.getElementsByClassName('slotValue')[1].innerHTML = this.stones[1];
+    document.getElementsByClassName('slotValue')[2].innerHTML = this.stones[2];
+    document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
+
+  };
 };
 
 
@@ -317,29 +363,37 @@ function Players(x, y, id, moves, gridId) {
 
 
 
-var HUD = {
-  slot1: 0,
-  slot2: 0,
-  slot3: 0,
-  slot4: 0,
-  slot5: 0,
-  slot6: 0,
-  slot7: 0,
-  slot8: 0,
+// var HUD = {
 
-  draw: function(claimGrid) {
-    claimGrid <= 750 ? this.slot1++ : 
-    claimGrid <= 950 ? this.slot2++ : 
-    claimGrid <= 990 ? this.slot3++ :
-    claimGrid <= 997 ? this.slot4++ : this.slot5++;
+//   draw: function(claimGrid) {
+//     if (claimGrid <= 750) {
+//       document.getElementsByClassName('slotValue')[0].innerHTML = this.slot1;
+
+//     }
+//     else if (claimGrid <= 950) {
+//       document.getElementsByClassName('slotValue')[1].innerHTML = this.slot2;
+//     }
+//     else if (claimGrid <= 980) {
+//       document.getElementsByClassName('slotValue')[2].innerHTML = this.slot3;
+//     }
+//     else if (claimGrid <= 990) {
+//       this.slot4++;
+//       document.getElementsByClassName('slotValue')[3].innerHTML = this.slot4;
+//     }
+
+//     // claimGrid <= 750 ? this.slot1++ : 
+//     // claimGrid <= 950 ? this.slot2++ : 
+//     // claimGrid <= 980 ? this.slot3++ :
+//     // claimGrid <= 990 ? this.slot4++ : this.slot5++;
   
 
-    for (var i=1; i<9; i++) {
-      var slot = 'this.slot'.concat(i);
-      document.getElementsByClassName('slotValue')[i-1].innerHTML = eval(slot);
-    }
-  }
-}
+//     // for (var i=1; i<9; i++) {
+//     //   var slot = 'this.slot'.concat(i);
+//     //   console.log(slot);
+//     //   document.getElementsByClassName('slotValue')[i-1].innerHTML = eval(slot);
+//     // }
+//   }
+// }
 
 
 
@@ -355,6 +409,29 @@ function draw(index) {
 
   ctx.beginPath();
 
+  //Build menu 
+  if (grids[index].building === true && player.buildGrids.indexOf(index) != -1) {
+
+    if (grids[index].gridId == player.buildGrids[0]) {
+      ctx.drawImage(rocks[0], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+    }
+    else if (grids[index].gridId == player.buildGrids[1]) {
+      ctx.drawImage(rocks[1], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      
+    }
+    else if (grids[index].gridId == player.buildGrids[2]) {
+      ctx.drawImage(rocks[2], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+      
+    }
+    else if (grids[index].gridId == player.buildGrids[3]) {
+      ctx.drawImage(rocks[3], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
+    }
+
+    ctx.rect(grids[index].x, grids[index].y, 50, 50);
+    ctx.fillStyle = '#ffff66';
+    ctx.fill();
+  }
+
   //Textured rocks
   if (grids[index].rock || grids[index].owner === true) {
     ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
@@ -366,7 +443,7 @@ function draw(index) {
   }
 
   //Player or their path
-  if (grids[index].occupied === true && grids[index].owner != player.id) {
+  if (grids[index].occupied === true && grids[index].owner !== player.id) {
     ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
@@ -399,32 +476,7 @@ function draw(index) {
   }
   ctx.globalCompositeOperation = 'destination-over';
 
-  //Build menu 
-  if (grids[index].building === true) {
-    ctx.rect(grids[index].x, grids[index].y, 50, 50);
-    ctx.fillStyle = '#ffff66';
-    ctx.fill();
-
-    if (grids[index].gridId == player.buildGrids[0]) {
-      ctx.drawImage(rocks[0], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
-    }
-    else if (grids[index].gridId == player.buildGrids[1]) {
-      ctx.drawImage(rocks[1], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
-      
-    }
-    else if (grids[index].gridId == player.buildGrids[2]) {
-      ctx.drawImage(rocks[2], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
-      
-    }
-    else if (grids[index].gridId == player.buildGrids[3]) {
-      ctx.drawImage(rocks[3], grids[index].x+7+Math.random(), grids[index].y+7+Math.random(), 36, 36);
-    }
-    else {
-      player.building = false;
-      grids[index].building = false;
-      player.build('close');
-    }
-  }
+  
 }
 
 
