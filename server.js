@@ -49,7 +49,15 @@ wss.on('connection', function(ws) {
 					grids[i].reset();
 				}
 			}
-			clients[currentId].close();
+			grids[players[currentId].baseGrid-1].reset();
+			grids[players[currentId].baseGrid+99].reset();
+			grids[players[currentId].baseGrid+100].reset();
+			grids[players[currentId].baseGrid+101].reset();
+			grids[players[currentId].baseGrid+1].reset();
+			grids[players[currentId].baseGrid-99].reset();
+			grids[players[currentId].baseGrid-100].reset();
+			grids[players[currentId].baseGrid-101].reset();
+
 			clients.splice(currentId, 1);
 			players.splice(currentId, 1);
 		}
@@ -109,8 +117,35 @@ wss.on('connection', function(ws) {
 	});
 
 	try {
+		var x;
+		var y;
+		var gridId;
+		getSpawnGrid();
+		function getSpawnGrid() {
+			var randGrid = Math.floor(Math.random()*9000)+500;
+			if (grids[randGrid].owner === false && grids[randGrid].rock <= 980 && randGrid.toString().slice(-2) > 5 && randGrid.toString().slice(-2) < 95) {
+
+				x = grids[randGrid].x;
+				y = grids[randGrid].y;
+				gridId = randGrid;
+				grids[gridId-1].reset('980');
+				grids[gridId+99].reset('990');
+				grids[gridId+100].reset('980');
+				grids[gridId+101].reset('990');
+				grids[gridId+1].reset('980');
+				grids[gridId-99].reset('990');
+				grids[gridId-100].reset('980');
+				grids[gridId-101].reset('990');
+				grids[gridId].reset('981');
+			}
+			else {
+				console.log('taken');
+				getSpawnGrid();
+			}
+		}
+
 		clients.push(ws);
-		players.push(new Player());
+		players.push(new Player(x, y, gridId));
 
 		//Send to new player
 		ws.send(JSON.stringify({
@@ -161,13 +196,15 @@ setInterval(function() {
 
 
 
-function Player() {
+
+function Player(x, y, gridId) {
 	this.stuff = false;
-	this.x = 50;
-	this.y = 50;
+	this.x = x;
+	this.y = y;
 	this.id = Math.random();
-	this.gridId = 101;
-	this.lastGridId = 0;
+	this.gridId = gridId;
+	this.baseGrid = gridId;
+	this.lastGridId = gridId;
 	this.moves = [false, false, false, false];
 	this.rgb = [Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)];
 	this.contesting = false;
@@ -176,15 +213,11 @@ function Player() {
 	this.canvasWidth;
 	this.canvasHeight;
 	this.smoothMoving = false;
-
-	this.viewStartGrid = 0;
-	this.viewEndGrid = 2030;
 };
 Player.prototype.update = function() {
 	var index = players.indexOf(this);
 
 	try {
-
 		//WASD or arrows
 		if (this.contesting === false) {
 			if (this.moves[0] && grids[this.gridId-1].rock <= 981 && grids[this.gridId-1].occupied === false) {
@@ -213,7 +246,7 @@ Player.prototype.update = function() {
 						   this.moves[4] == 2 ? 3 : 
 						   this.moves[4] == 3 ? 1 : null;
 
-				if (this.stones[this.moves[4]]-cost >= 0 && grids[this.gridId].owner == this.id) {
+				if (this.stones[this.moves[4]]-cost >= 0 && grids[this.gridId].owner == this.id && grids[this.gridId].rock < 1000) {
 					this.stones[this.moves[4]] -= cost;
 					grids[this.gridId].build(this.moves[4]);
 				}
@@ -247,14 +280,12 @@ Player.prototype.update = function() {
 	    	}, this.smooth[1]/25);
 		}
 
-		//Which blocks to show, based on position
-		this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-196 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-196 : 0;
-		this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 < grids.length ? this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+96 : 10000;
 	}
 	catch (e) {
 		console.log(e);
 	}
 };
+
 
 
 
@@ -373,8 +404,16 @@ Grid.prototype.own = function(index, id) {
 	}
 };
 Grid.prototype.build = function(rock) {
-	var rock = rock == 0 ? 750 : rock  == 1 ? 950 : rock == 2 ? 980 : rock == 3 ? 981 : 0;
-	this.reset(rock);
+	this.rock = rock == 0 ? 1000 : rock  == 1 ? 1001 : rock == 2 ? 1002 : rock == 3 ? 1003 : 0;
+
+	this.rock == 1000 ? this.image = 5 :
+	this.rock == 1001 ? this.image = 6 :
+	this.rock == 1002 ? this.image = 7 : 
+	this.rock == 1003 ? this.image = 8 : 0;
+
+
+	this.occupied = false;
+	console.log(this.rock + ' ' + this.image);
 	updatedGrids.push(this);
 };
 Grid.prototype.reset = function(rock) {
@@ -394,7 +433,7 @@ Grid.prototype.reset = function(rock) {
 		this.rock <= 981 ? this.delay = 2000 :
 		this.rock <= 1000 ? this.delay = 0 : this.delay = 0;
 
-		this.rock <= 750 ? this.image = 00 :
+		this.rock <= 750 ? this.image = 0 :
 		this.rock <= 950 ? this.image = 1 :
 		this.rock <= 980 ? this.image = 2 : 
 		this.rock <= 981 ? this.image = 3 : 
