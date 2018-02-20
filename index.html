@@ -352,7 +352,7 @@ function Players(x, y, id, moves, gridId) {
 
 function drawTimer() {
 
-  ctx.clearRect(player.x-canvas.width/2, player.y-canvas.height/2, canvas.width, canvas.height);
+  ctx.clearRect(player.x-canvas.width/2+25, player.y-canvas.height/2+25, canvas.width, canvas.height);
 
   ctx.setTransform(1, 0, 0, 1, -player.x-25+canvas.width/2, -player.y-25+canvas.height/2);
   ctx.drawImage(head, player.x+7, player.y+7, 36, 36);
