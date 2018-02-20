@@ -308,6 +308,11 @@ function Players(x, y, id, moves, gridId) {
 
         if (grids[this.gridId].rock >= 1000) {
           this.build('close');
+          console.log('close');
+          console.log(grids[this.gridId]);
+        }
+        else {
+          console.log(grids[this.gridId]);
         }
       }
       else if (e == 'close' && this.building === true) {
