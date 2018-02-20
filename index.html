@@ -153,6 +153,10 @@ var characters = /^[_A-z0-9]*((-|\s)*[_A-z0-9])*$/g;
 
 
 
+
+
+
+
 ws.onmessage = function(e) {
   var message = JSON.parse(e.data);
   if (message.type == 'gameUpdate') {
@@ -166,10 +170,12 @@ ws.onmessage = function(e) {
 
 
     for (var i=0; i<message.updatedGrids.length; i++) {
-      grids[message.updatedGrids.gridId] = message.updatedGrids;
+      grids[message.updatedGrids[i].gridId] = message.updatedGrids[i];
     }
 
-    player.control();
+    if (player.ready === true) {
+      player.control();
+    }
   }
 
   //Player just joined
@@ -181,6 +187,7 @@ ws.onmessage = function(e) {
       type: 'initPlayer',
       info: player
     })); 
+    drawTimer();
   }
 } 
 
@@ -208,13 +215,15 @@ function Players(x, y, id, moves, gridId) {
   this.buildGrids = [];
   this.buildTab = false
   this.stones = [0, 0, 0, 0];
-  this.viewStartGrid;
-  this.viewEndGrid;
+  this.viewStartGrid = 0;
+  this.viewEndGrid = 0;
   this.canvasWidth = canvas.width;
   this.canvasHeight = canvas.height;
+  this.ready = true;
 
 
   this.control = function() {
+    this.ready = false;
 
     if (!this.building && !this.chatting) {
       this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
@@ -253,34 +262,19 @@ function Players(x, y, id, moves, gridId) {
     }
 
     this.HUD();
-    player.camera();
+    this.camera();
   };
   this.camera = function() {
-
-    ctx.setTransform(1, 0, 0, 1, -this.x+canvas.width/2, -this.y+canvas.height/2);
 
     for (var i=0; i<this.updatedGrids.length; i++) {
       if (this.updatedGrids[i]) {
         grids[this.updatedGrids[i].gridId] = this.updatedGrids[i];
       }
     }
-        
-    ctx.clearRect(player.x-canvas.width/2, player.y-canvas.height/2, canvas.width, canvas.height);
-
-    ctx.drawImage(head, this.x+7, this.y+7, 36, 36);
-
+    
     this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-150 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-150 : 0;
     this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+50 < grids.length ? this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+50 : 10000;
-
-    for (var i=this.viewStartGrid; i<this.viewEndGrid; i++) {
-      var a = i.toString().slice(-2);
-      var b = player.gridId.toString().slice(-2);
-      if (b-a>=0 && b-a <= 10 || a-b>=0 && a-b <= 10) {
-        draw(i);
-      }
-    }
   };
-
   this.build = function(e) {
     if (this.smoothMoving === false) {
 
@@ -356,6 +350,35 @@ function Players(x, y, id, moves, gridId) {
 
 
 
+function drawTimer() {
+
+  ctx.clearRect(player.x-canvas.width/2, player.y-canvas.height/2, canvas.width, canvas.height);
+
+  ctx.setTransform(1, 0, 0, 1, -player.x+canvas.width/2, -player.y+canvas.height/2);
+  ctx.drawImage(head, player.x+7, player.y+7, 36, 36);
+
+  for (var i=player.viewStartGrid; i<player.viewEndGrid; i++) {
+    var a = i.toString().slice(-2);
+    var b = player.gridId.toString().slice(-2);
+    if (b-a>=0 && b-a <= 10 || a-b>=0 && a-b <= 10) {
+      draw(i);
+    }
+
+      if (i+1 == player.viewEndGrid) {
+        player.ready = true;
+      }    
+  }
+  // player.ready = true;
+  requestAnimationFrame(drawTimer);
+}
+
+
+
+
+
+
+
+
 
 
 function draw(index) {
@@ -408,28 +431,16 @@ function draw(index) {
       ctx.strokeText('DIAM', grids[index].x+25, grids[index].y+35);
       ctx.drawImage(rocks[8], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
     }
-
     ctx.stroke();
     ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fill();
   }
 
   //Textured rocks
-  if (grids[index].rock || grids[index].owner === true) {
-    //Rock being mined
-    if (grids[index].contesting === true) {
-      ctx.drawImage(eval('crack'.concat(grids[index].cracks+1)), grids[index].x, grids[index].y, 50, 50);
-    }
+  if (grids[index].rock) {
     ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
   }
-
-  //Player or their path
-  if (grids[index].occupied === true && grids[index].owner !== player.id) {
-    ctx.rect(grids[index].x, grids[index].y, 50, 50);
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
-    ctx.fill();
-    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
-  }
+  //Player path
   else if (typeof grids[index].owner === 'number') {
     ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
@@ -467,7 +478,7 @@ function draw(index) {
     ctx.fillStyle = 'white';
     ctx.fillText(player.message, grids[index].x+25, grids[index].y);
   }
-  ctx.globalCompositeOperation = 'destination-over';  
+  ctx.globalCompositeOperation = 'destination-over'; 
 }
 
 

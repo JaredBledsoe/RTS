@@ -336,15 +336,15 @@ Grid.prototype.own = function(index, id) {
 
 			updatedGrids.push(this);
 
-		setTimeout(() => {
-			this.cracks = 1;
-			updatedGrids.push(this);
-		},this.delay*.33);
+		// setTimeout(() => {
+		// 	this.cracks = 1;
+		// 	updatedGrids.push(this);
+		// },this.delay*.33);
 
-		setTimeout(() => {
-			this.cracks = 2;
-			updatedGrids.push(this);
-		},this.delay*.66);
+		// setTimeout(() => {
+		// 	this.cracks = 2;
+		// 	updatedGrids.push(this);
+		// },this.delay*.66);
 
 			setTimeout(() => {
 				if (players[index]) {
@@ -387,6 +387,7 @@ Grid.prototype.own = function(index, id) {
 		else if (this.owner === id) {
 			setTimeout(() => {
 				this.occupied = true;
+				this.cracks = 0;
 				grids[players[index].lastGridId].occupied = false;
 				updatedGrids.push(grids[players[index].lastGridId]);
 				updatedGrids.push(this);
