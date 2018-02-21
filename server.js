@@ -102,61 +102,63 @@ wss.on('connection', function(ws) {
 
 			//Player sent message
 			else if (message.type == 'chat') {
-				grids[players[currentId].gridId].chat(message.info);
+				grids[players[currentId].gridId].chat(message.info, players[currentId].gridId);
 			}
 
-			//Player just joined
-			else if (message.type == 'initPlayer') {
-				players[currentId].canvasWidth = message.info.canvasWidth;
-				players[currentId].canvasHeight = message.info.canvasHeight;
-			}
-				}
+		}
 		catch (e) {
 			console.log(e);
 		}
 	});
+	function getSpawnGrid() {
+		var successful = true;
+		var randGrid = Math.floor(Math.random()*9000)+500;
 
-	try {
-		var x;
-		var y;
-		var gridId;
-		getSpawnGrid();
-		function getSpawnGrid() {
-			var randGrid = Math.floor(Math.random()*9000)+500;
-			if (grids[randGrid].owner === false && grids[randGrid].rock <= 980 && randGrid.toString().slice(-2) > 5 && randGrid.toString().slice(-2) < 95) {
-
-				x = grids[randGrid].x;
-				y = grids[randGrid].y;
-				gridId = randGrid;
-				grids[gridId-1].reset('980');
-				grids[gridId+99].reset('990');
-				grids[gridId+100].reset('980');
-				grids[gridId+101].reset('990');
-				grids[gridId+1].reset('980');
-				grids[gridId-99].reset('990');
-				grids[gridId-100].reset('980');
-				grids[gridId-101].reset('990');
-				grids[gridId].reset('981');
+		for (var i=0; i<players.length;) {
+			if (Math.abs(grids[players[i].baseGrid].x-grids[randGrid].x) >= 200 && Math.abs(grids[players[i].baseGrid].y-grids[randGrid].y) >= 4) {
+				i++;
 			}
 			else {
-				console.log('taken');
-				getSpawnGrid();
+				console.log(randGrid + ' ' + players[i].baseGrid);
+				i = 0;
+				randGrid = Math.floor(Math.random()*9000)+500;
+				successful = false;
 			}
 		}
 
-		clients.push(ws);
-		players.push(new Player(x, y, gridId));
+		if (grids[randGrid].owner === false && grids[randGrid].rock <= 980 && randGrid.toString().slice(-2) > 5 && randGrid.toString().slice(-2) < 95 && successful === true) {
 
-		//Send to new player
-		ws.send(JSON.stringify({
-			type: 'initPlayer',
-			player: players[players.length-1],
-			grids: grids
-		}));
+			grids[randGrid-1].reset('980');
+			grids[randGrid+99].reset('1002');
+			grids[randGrid+100].reset('980');
+			grids[randGrid+101].reset('1002');
+			grids[randGrid+1].reset('980');
+			grids[randGrid-99].reset('1002');
+			grids[randGrid-100].reset('980');
+			grids[randGrid-101].reset('1002');
+			grids[randGrid].reset('981');
+
+			clients.push(ws);
+
+			players.push(new Player(grids[randGrid].x, grids[randGrid].y, randGrid));
+
+			//Send to new player
+			ws.send(JSON.stringify({
+				type: 'initPlayer',
+				player: players[players.length-1],
+				grids: grids
+			}));
+			console.log(' ');
+			console.log(' ');
+			console.log(' ');
+			console.log(' ');
+		}
+		else {
+			console.log('did not work');
+			getSpawnGrid();
+		}
 	}
-	catch (e) {
-		console.log(e);
-	}
+	getSpawnGrid();
 });
 
 
@@ -199,6 +201,7 @@ setInterval(function() {
 
 function Player(x, y, gridId) {
 	this.stuff = false;
+	this.health = 40;
 	this.x = x;
 	this.y = y;
 	this.id = Math.random();
@@ -210,8 +213,6 @@ function Player(x, y, gridId) {
 	this.contesting = false;
 	this.smooth = [0, 0, 0, 0];
 	this.stones = [0, 0, 0, 0];
-	this.canvasWidth;
-	this.canvasHeight;
 	this.smoothMoving = false;
 };
 Player.prototype.update = function() {
@@ -240,6 +241,7 @@ Player.prototype.update = function() {
 				grids[this.gridId-100].own(index, this.id);
 				this.smooth = ['left', grids[this.gridId-100].delay, grids[this.gridId-100].x, grids[this.gridId-100].y];
 			}
+			//Building
 			else if (this.moves[4] !== false) {
 				var cost = this.moves[4] == 0 ? 10 : 
 						   this.moves[4] == 1 ? 5 : 
@@ -250,6 +252,19 @@ Player.prototype.update = function() {
 					this.stones[this.moves[4]] -= cost;
 					grids[this.gridId].build(this.moves[4]);
 				}
+			}
+			//Attacking structure
+			else if (this.moves[0] && grids[this.gridId-1].rock >= 1000) {
+				grids[this.gridId-1].playerAttack(index);
+			}
+			else if (this.moves[1] && grids[this.gridId+100].rock >= 1000) {
+				grids[this.gridId+100].playerAttack(index);
+			}
+			else if (this.moves[2] && grids[this.gridId+1].rock >= 1000) {
+				grids[this.gridId+1].playerAttack(index);
+			}
+			else if (this.moves[3] && grids[this.gridId-100].rock >= 1000) {
+				grids[this.gridId-100].playerAttack(index);
 			}
 		}
 
@@ -311,9 +326,10 @@ function Grid(x, y) {
 	this.cracks = 0;
 	this.contesting = false;
 	this.building = false;
+	this.health = 40;
 
 	if (this.x == 0 || this.y == 0 || this.x == 4950 || this.y == 4950) {
-		this.rock = 1001;
+		this.rock = 990;
 	}
 
 	this.rock <= 750 ? this.delay = 300 :
@@ -335,16 +351,6 @@ Grid.prototype.own = function(index, id) {
 			this.contesting = true;
 
 			updatedGrids.push(this);
-
-		// setTimeout(() => {
-		// 	this.cracks = 1;
-		// 	updatedGrids.push(this);
-		// },this.delay*.33);
-
-		// setTimeout(() => {
-		// 	this.cracks = 2;
-		// 	updatedGrids.push(this);
-		// },this.delay*.66);
 
 			setTimeout(() => {
 				if (players[index]) {
@@ -376,16 +382,12 @@ Grid.prototype.own = function(index, id) {
 					players[index].x = this.x;
 					players[index].y = this.y;
 					players[index].contesting = false;
-
-					// clients[index].send(JSON.stringify({
-					// 	type: 'claimGrid',
-					// 	rock: this
-					// }));				
 				}
 			},this.delay);
 		}
 		else if (this.owner === id) {
 			setTimeout(() => {
+				this.health = players[index].health;
 				this.occupied = true;
 				this.cracks = 0;
 				grids[players[index].lastGridId].occupied = false;
@@ -412,10 +414,64 @@ Grid.prototype.build = function(rock) {
 	this.rock == 1002 ? this.image = 7 : 
 	this.rock == 1003 ? this.image = 8 : 0;
 
+	this.health = 40;
 
 	this.occupied = false;
-	console.log(this.rock + ' ' + this.image);
 	updatedGrids.push(this);
+};
+
+
+Grid.prototype.playerAttack = function(index) {
+
+	var damage = this.image == 5 ? .5 :
+				 this.image == 6 ? .25 :
+				 this.image == 7 ? .15 :
+				 this.image == 8 ? .04 : 0;
+
+	if (Math.floor(this.health) == 40) {
+		this.heal(damage);
+	}
+
+	this.health -= damage;
+
+	if (this.health <= 0) {
+		var stoneReceived = this.image == 5 ? 7 :
+							this.image == 6 ? 4 :
+							this.image == 7 ? 2 : 0;
+		players[index].stones[this.image-5] += stoneReceived;
+		this.reset();
+	}
+	updatedGrids.push(this);
+};
+Grid.prototype.heal = function(damage) {
+	setTimeout(() => {
+		var healing = setInterval(() => {
+			if (Math.floor(this.health) < 40) {
+				this.health += damage;
+			}
+			else if (Math.floor(this.health) == 40) {
+				this.health = 40;
+				clearInterval(healing);
+			}
+			updatedGrids.push(this);
+		},1000);
+	},2000);
+};
+Grid.prototype.chat = function(message, index) {
+	try {
+		this.message = message.length > 25 ? this.message = message.slice(0, 25) : message;
+
+		updatedGrids.push(this);
+
+		setTimeout(function hidess() {
+			grids[index].message = '';
+			updatedGrids.push(grids[index]);
+		}, 2000);
+		clearTimeout(hidess);
+	}
+	catch (e) {
+		console.log(e);
+	}
 };
 Grid.prototype.reset = function(rock) {
 	try {
@@ -438,22 +494,15 @@ Grid.prototype.reset = function(rock) {
 		this.rock <= 950 ? this.image = 1 :
 		this.rock <= 980 ? this.image = 2 : 
 		this.rock <= 981 ? this.image = 3 : 
-		this.rock <= 1000 ? this.image = 4 : this.image = 4;
-		updatedGrids.push(this);
-	}
-	catch (e) {
-		console.log(e);
-	}
-};
-Grid.prototype.chat = function(message) {
-	try {
-		this.message = message.length > 25 ? this.message = message.slice(0, 25) : message;
+		this.rock <= 1000 ? this.image = 4 : 
+		this.rock == 1000 ? this.image = 5 :
+		this.rock == 1001 ? this.image = 6 :
+		this.rock == 1002 ? this.image = 7 : 
+		this.rock == 1003 ? this.image = 8 : 0;
+
+		this.health = 40;
 
 		updatedGrids.push(this);
-		setTimeout(() => {
-			this.message = '';
-			updatedGrids.push(this);
-		}, 5000);
 	}
 	catch (e) {
 		console.log(e);

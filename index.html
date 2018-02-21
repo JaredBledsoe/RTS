@@ -11,6 +11,12 @@
     background-repeat: repeat;
     background-size: 20%;
   }
+  .hide {
+    display: none;
+  }
+  .show {
+    display: initial;
+  }
   #shadow {
     position: absolute;
     width: 100%;
@@ -56,6 +62,84 @@
   .select {
     background-color: rgba(255, 255, 255, .25);
   }
+  #buildMenu, #chatInstruction {
+    position: absolute;
+    text-align: center;
+    z-index: 10;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    font-family: 'Shrikhand', cursive;
+    font-weight: bold;
+    font-size: 14px;
+    font-weight: 300;
+  }
+  #buildMenu p {
+    margin: 0;
+  }
+  #build1, #build2, #build3, #build4 {
+    border-radius: 10px;
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-repeat: no-repeat;
+    background-position: center; 
+    background-size: 40px 40px;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+    vertical-align: middle;
+  }
+  .canAfford {
+    color: #99ff66;
+    background-color: #99ff66;
+  }
+  .cannotAfford {
+    color: #ff6666;
+    background-color: #ff6666;
+  }
+  .stoneAmount {
+    margin-top: 5px !important;
+  }
+  #build1 {
+    top: -75px;
+    left: -25px;
+    background-image: url('http://rtstextures.bitballoon.com/rock5.jpg');
+  }
+  #build2 {
+    top: -25px;
+    left: 25px;
+    background-image: url('http://rtstextures.bitballoon.com/rock6.jpg');
+  }
+  #build3 {
+    top: 25px;
+    left: -25px;
+    background-image: url('http://rtstextures.bitballoon.com/rock7.jpg');
+  }
+  #build4 {
+    top: -25px;
+    left: -75px;
+    background-image: url('http://rtstextures.bitballoon.com/rock8.jpg');
+  }
+  #chatInstruction {
+    margin-top: 25px;
+  }
+  #chatInstruction p {
+    color: white;
+    margin: 0;
+  }
+  #chatPreview {
+    white-space: nowrap;
+    font-size: 30px;
+    position: absolute;
+    background-color: rgba(0, 0, 0, .5);
+    width: auto;
+    min-width: 10px;
+    min-height: 45px;
+    height: auto;
+    left: 50%;
+    top: -80px;
+    transform: translate(-50%, 0);
+  }
 
 
 </style>
@@ -96,6 +180,20 @@
   <div class="slot"><p class="slotValue">0</p></div>
   <div class="slot"><p class="slotValue">0</p></div>
  --></div>
+
+<div id="buildMenu" class="hide">
+  <div id="build1" class="cannotAfford"><p class="stoneAmount">10</p><p>DIRT</p></div>
+  <div id="build2" class="cannotAfford"><p class="stoneAmount">5</p><p>STONE</p></div>
+  <div id="build3" class="cannotAfford"><p class="stoneAmount">3</p><p>GOLD</p></div>
+  <div id="build4" class="cannotAfford"><p class="stoneAmount">1</p><p>DIAM</p></div>
+</div>
+
+<div id="chatInstruction" class="hide">
+  <p>ENTER = Send</p>
+  <p>ESC = Close</p>
+  <p id="chatPreview"></p>
+</div>
+
 <script>
 
 
@@ -118,7 +216,7 @@ ctx.font = '30px Shrikhand';
 
 window.addEventListener("resize", function() {
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;  
+  canvas.height = window.innerHeight; 
 });
 
 var keyStates = [];
@@ -162,11 +260,11 @@ ws.onmessage = function(e) {
   if (message.type == 'gameUpdate') {
     //Move viewport to center player
     player.gridId = message.player.gridId;
-    player.updatedGrids = message.updatedGrids;
     player.smoothMoving = message.player.smoothMoving;
     player.x = message.player.x;
     player.y = message.player.y;
     player.stones = message.player.stones;
+    player.health = message.player.health;
 
 
     for (var i=0; i<message.updatedGrids.length; i++) {
@@ -207,20 +305,17 @@ function Players(x, y, id, moves, gridId) {
   this.moves = [false, false, false, false, false];
   this.gridId = gridId;
   this.smoothMoving = false;
-  this.updatedGrids = [];
   this.updated = false;
   this.building = false;
   this.chatting = false;
+  this.health = 40;
   this.message = '';
   this.buildGrids = [];
   this.buildTab = false
   this.stones = [0, 0, 0, 0];
   this.viewStartGrid = 0;
   this.viewEndGrid = 0;
-  this.canvasWidth = canvas.width;
-  this.canvasHeight = canvas.height;
   this.ready = true;
-
 
   this.control = function() {
     this.ready = false;
@@ -265,39 +360,21 @@ function Players(x, y, id, moves, gridId) {
     this.camera();
   };
   this.camera = function() {
-
-    for (var i=0; i<this.updatedGrids.length; i++) {
-      if (this.updatedGrids[i]) {
-        grids[this.updatedGrids[i].gridId] = this.updatedGrids[i];
-      }
-    }
-    
     this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-100 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-100 : 0;
     this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+100 < grids.length ? this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+100 : 10000;
   };
   this.build = function(e) {
     if (this.smoothMoving === false) {
-
-      this.buildGrids[0] = this.gridId-1;
-      this.buildGrids[1] = this.gridId+100;
-      this.buildGrids[2] = this.gridId+1;
-      this.buildGrids[3] = this.gridId-100;
-
       if (e == 'toggle') {
-        if (this.building === false) {
+        if (document.getElementById('buildMenu').classList.contains('hide')) {
           this.building = true;
-          grids[this.buildGrids[0]].building = true;
-          grids[this.buildGrids[1]].building = true;
-          grids[this.buildGrids[2]].building = true;
-          grids[this.buildGrids[3]].building = true;
+          document.getElementById('buildMenu').classList.add('show');
+          document.getElementById('buildMenu').classList.remove('hide');
         }
-
-        else if (this.building === true) {
+        else if (document.getElementById('buildMenu').classList.contains('show')) {
           this.building = false;
-          grids[this.buildGrids[0]].building = false;
-          grids[this.buildGrids[1]].building = false;
-          grids[this.buildGrids[2]].building = false;
-          grids[this.buildGrids[3]].building = false;
+          document.getElementById('buildMenu').classList.add('hide');
+          document.getElementById('buildMenu').classList.remove('show');
         }
       }
       else if (typeof(e) == 'number') {
@@ -306,22 +383,16 @@ function Players(x, y, id, moves, gridId) {
                         e == 2 ? 2 :
                         e == 3 ? 3 : null;
 
-        if (grids[this.gridId].rock >= 1000) {
-          this.build('close');
-          console.log('close');
-          console.log(grids[this.gridId]);
-        }
-        else {
-          console.log(grids[this.gridId]);
-        }
+
       }
       else if (e == 'close' && this.building === true) {
+        if (document.getElementById('buildMenu').classList.contains('show')) {
+          document.getElementById('buildMenu').classList.add('hide');
+          document.getElementById('buildMenu').classList.remove('show');
+        }
+
         this.building = false;
         this.moves[4] = null;
-        grids[this.buildGrids[0]].building = false;
-        grids[this.buildGrids[1]].building = false;
-        grids[this.buildGrids[2]].building = false;
-        grids[this.buildGrids[3]].building = false;
       }
     }
   };
@@ -341,10 +412,69 @@ function Players(x, y, id, moves, gridId) {
     }
   };
   this.HUD = function() {
-    document.getElementsByClassName('slotValue')[0].innerHTML = this.stones[0];
-    document.getElementsByClassName('slotValue')[1].innerHTML = this.stones[1];
-    document.getElementsByClassName('slotValue')[2].innerHTML = this.stones[2];
-    document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
+    //Bottom bar
+    if (document.getElementsByClassName('slotValue')[0].innerHTML != this.stones[0]) {
+      document.getElementsByClassName('slotValue')[0].innerHTML = this.stones[0];
+    }
+    if (document.getElementsByClassName('slotValue')[1].innerHTML != this.stones[1]) {
+      document.getElementsByClassName('slotValue')[1].innerHTML = this.stones[1]
+    }
+    if (document.getElementsByClassName('slotValue')[2].innerHTML != this.stones[2]) {
+      document.getElementsByClassName('slotValue')[2].innerHTML = this.stones[2];
+    }
+    if (document.getElementsByClassName('slotValue')[3].innerHTML != this.stones[3]) {
+      document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
+    }
+
+    //Build menu
+    if (this.stones[0] >= 10 && document.getElementById('build1').classList.contains('cannotAfford')) {
+      document.getElementById('build1').classList.add('canAfford');
+      document.getElementById('build1').classList.remove('cannotAfford');
+    }
+    else if (this.stones[0] < 10 && document.getElementById('build1').classList.contains('canAfford')) {
+      document.getElementById('build1').classList.add('cannotAfford');
+      document.getElementById('build1').classList.remove('canAfford');
+    }
+    if (this.stones[1] >= 5 && document.getElementById('build2').classList.contains('cannotAfford')) {
+      document.getElementById('build2').classList.add('canAfford');
+      document.getElementById('build2').classList.remove('cannotAfford');
+    }
+    else if (this.stones[1] < 5 && document.getElementById('build2').classList.contains('canAfford')) {
+      document.getElementById('build2').classList.add('cannotAfford');
+      document.getElementById('build2').classList.remove('canAfford');
+    }
+    if (this.stones[2] >= 3 && document.getElementById('build3').classList.contains('cannotAfford')) {
+      document.getElementById('build3').classList.add('canAfford');
+      document.getElementById('build3').classList.remove('cannotAfford');
+    }
+    else if (this.stones[2] < 3 && document.getElementById('build3').classList.contains('canAfford')) {
+      document.getElementById('build3').classList.add('cannotAfford');
+      document.getElementById('build3').classList.remove('canAfford');
+    }
+    if (this.stones[3] >= 1 && document.getElementById('build4').classList.contains('cannotAfford')) {
+      document.getElementById('build4').classList.add('canAfford');
+      document.getElementById('build4').classList.remove('cannotAfford');
+    }
+    else if (this.stones[3] < 1 && document.getElementById('build4').classList.contains('canAfford')) {
+      document.getElementById('build4').classList.add('cannotAfford');
+      document.getElementById('build4').classList.remove('canAfford');
+    }
+    if (grids[this.gridId].rock >= 1000) {
+      this.build('close');
+    }
+
+    //Chat instructions
+    if (this.chatting === true && document.getElementById('chatInstruction').classList.contains('hide')) {
+      document.getElementById('chatInstruction').classList.add('show');
+      document.getElementById('chatInstruction').classList.remove('hide');
+    }
+    else if (this.chatting === false && document.getElementById('chatInstruction').classList.contains('show')) {
+      document.getElementById('chatInstruction').classList.add('hide');
+      document.getElementById('chatInstruction').classList.remove('show');
+    }
+    if (this.chatting === true) {
+      document.getElementById('chatPreview').innerHTML = this.message;
+    }
   };
 };
 
@@ -355,8 +485,9 @@ function Players(x, y, id, moves, gridId) {
 
 
 
-function drawTimer() {
 
+
+function drawTimer() {
   ctx.clearRect(player.x-canvas.width/2+25, player.y-canvas.height/2+25, canvas.width, canvas.height);
 
   ctx.setTransform(1, 0, 0, 1, -player.x-25+canvas.width/2, -player.y-25+canvas.height/2);
@@ -373,7 +504,6 @@ function drawTimer() {
         player.ready = true;
       }    
   }
-  // player.ready = true;
   requestAnimationFrame(drawTimer);
 }
 
@@ -390,98 +520,37 @@ function draw(index) {
 
   ctx.beginPath();
 
-  //Build menu 
-  if (grids[index].building === true && player.buildGrids.indexOf(index) != -1) {
-    ctx.font = '13px Shrikhand';
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = 'black';
-
-    var canBuild = grids[index].gridId == player.buildGrids[0] ? 0 : 
-                   grids[index].gridId == player.buildGrids[1] ? 1 : 
-                   grids[index].gridId == player.buildGrids[2] ? 2 : 
-                   grids[index].gridId == player.buildGrids[3] ? 3 : null;
-
-    if (canBuild == 0 && player.stones[0] >= 10 || canBuild == 1 && player.stones[1] >= 5 || canBuild == 2 && player.stones[2] >= 3 || canBuild == 3 && player.stones[3] >= 1) {
-      ctx.fillStyle = '#99ff66';
-    }
-    else {
-      ctx.fillStyle = '#ff6666';
-    }
-
-    if (canBuild == 0) {
-      ctx.fillText('10', grids[index].x+25, grids[index].y+20);
-      ctx.strokeText('10', grids[index].x+25, grids[index].y+20);
-      ctx.fillText('DIRT', grids[index].x+25, grids[index].y+35);
-      ctx.strokeText('DIRT', grids[index].x+25, grids[index].y+35);
-      ctx.drawImage(rocks[5], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
-    }
-    else if (canBuild == 1) {
-      ctx.fillText('5', grids[index].x+25, grids[index].y+20);
-      ctx.strokeText('5', grids[index].x+25, grids[index].y+20);
-      ctx.fillText('STONE', grids[index].x+25, grids[index].y+35);
-      ctx.strokeText('STONE', grids[index].x+25, grids[index].y+35);
-      ctx.drawImage(rocks[6], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
-    }
-    else if (canBuild == 2) {
-      ctx.fillText('3', grids[index].x+25, grids[index].y+20);
-      ctx.strokeText('3', grids[index].x+25, grids[index].y+20);
-      ctx.fillText('GOLD', grids[index].x+25, grids[index].y+35);
-      ctx.strokeText('GOLD', grids[index].x+25, grids[index].y+35);
-      ctx.drawImage(rocks[7], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
-    }
-    else if (canBuild == 3) {
-      ctx.fillText('1', grids[index].x+25, grids[index].y+20);
-      ctx.strokeText('1', grids[index].x+25, grids[index].y+20);
-      ctx.fillText('DIAM', grids[index].x+25, grids[index].y+35);
-      ctx.strokeText('DIAM', grids[index].x+25, grids[index].y+35);
-      ctx.drawImage(rocks[8], grids[index].x+5+Math.random(), grids[index].y+5+Math.random(), 40, 40);
-    }
-    ctx.stroke();
-    ctx.rect(grids[index].x, grids[index].y, 50, 50);
-    ctx.fill();
-  }
-
   //Textured rocks
   if (grids[index].rock) {
+    if (grids[index].health < 40 && grids[index].health > 0) {
+      // console.log(grids[index].health);
+      ctx.rect(grids[index].x+5, grids[index].y+22, grids[index].health, 8);
+      ctx.fillStyle = '#99ff66';
+      ctx.fill();
+      ctx.rect(grids[index].x+5, grids[index].y+22, 40, 8);
+      ctx.fillStyle = '#ff6666';
+      ctx.fill();
+    }
     ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
   }
+  //Other player
+  if (grids[index].occupied === true && grids[index].owner !== player.id) {
+    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
+    ctx.rect(grids[index].x, grids[index].y, 50, 50);
+    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
+    ctx.fill();
+  }  
   //Player path
   else if (typeof grids[index].owner === 'number') {
     ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
     ctx.fill();
   }
-
   //Message
   if (grids[index].message) {
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
     ctx.fillText(grids[index].message, grids[index].x+25, grids[index].y);
-  }
-
-  //Chat bar
-  if (player.chatting === true && index == player.gridId) {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.rect(grids[player.gridId].x, grids[player.gridId].y, 50, -25);
-    ctx.fillStyle = 'rgba(0, 0, 0, .5)';
-    ctx.fill();
-    ctx.font = '15px Shrikhand';
-    ctx.fillStyle = 'white';
-    ctx.fillText('ENTER = Send', grids[index].x+25, grids[index].y+55);
-    ctx.strokeText('ENTER = Send', grids[index].x+25, grids[index].y+55);
-    ctx.fillText('ESC = Close', grids[index].x+25, grids[index].y+70);
-    ctx.strokeText('ESC = Close', grids[index].x+25, grids[index].y+70);
-
-    
-    ctx.textAlign = 'center';
-
-    ctx.lineWidth = 1;    
-    ctx.strokeStyle = 'black';
-    ctx.stroke();
-
-    ctx.font = '25px Shrikhand';
-    ctx.fillStyle = 'white';
-    ctx.fillText(player.message, grids[index].x+25, grids[index].y);
   }
   ctx.globalCompositeOperation = 'destination-over'; 
 }
