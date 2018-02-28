@@ -102,7 +102,7 @@ wss.on('connection', function(ws) {
 
 			//Player sent message
 			else if (message.type == 'chat') {
-				grids[players[currentId].gridId].chat(message.info, players[currentId].gridId);
+				players[currentId].chat(message.info);
 			}
 
 		}
@@ -136,7 +136,7 @@ wss.on('connection', function(ws) {
 			grids[randGrid-99].reset('1002');
 			grids[randGrid-100].reset('980');
 			grids[randGrid-101].reset('1002');
-			grids[randGrid].reset('981');
+			grids[randGrid].reset('990');
 
 			clients.push(ws);
 
@@ -173,13 +173,18 @@ wss.on('connection', function(ws) {
 //Send grids to players
 setInterval(function() {
 	try {
+		var minimizedPlayers = [];
+		for (var i=0; i<players.length; i++) {
+			minimizedPlayers.push([players[i].x, players[i].y, players[i].message]);
+		}
 		for (var i=0; i<players.length; i++) {
 			players[i].update();
 			
 			clients[i].send(JSON.stringify({
 				type: 'gameUpdate',
 				player: players[i],
-				updatedGrids: updatedGrids
+				updatedGrids: updatedGrids,
+				players: minimizedPlayers
 			}));
 		}
 		updatedGrids = [];
@@ -211,9 +216,10 @@ function Player(x, y, gridId) {
 	this.moves = [false, false, false, false];
 	this.rgb = [Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)];
 	this.contesting = false;
-	this.smooth = [0, 0, 0, 0];
+	this.smooth = null;
 	this.stones = [0, 0, 0, 0];
 	this.smoothMoving = false;
+	this.message;
 };
 Player.prototype.update = function() {
 	var index = players.indexOf(this);
@@ -221,25 +227,25 @@ Player.prototype.update = function() {
 	try {
 		//WASD or arrows
 		if (this.contesting === false) {
-			if (this.moves[0] && grids[this.gridId-1].rock <= 981 && grids[this.gridId-1].occupied === false) {
+			if (this.moves[0] && grids[this.gridId-1].rock <= 990 && grids[this.gridId-1].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId-1].own(index, this.id);
-				this.smooth = ['up', grids[this.gridId-1].delay, grids[this.gridId-1].x, grids[this.gridId-1].y];
+				this.smooth = -1;
 			}
-			else if (this.moves[1] && grids[this.gridId+100].rock <= 981 && grids[this.gridId+100].occupied === false) {
+			else if (this.moves[1] && grids[this.gridId+100].rock <= 990 && grids[this.gridId+100].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId+100].own(index, this.id);
-				this.smooth = ['right', grids[this.gridId+100].delay, grids[this.gridId+100].x, grids[this.gridId+100].y];
+				this.smooth = 100;
 			}
-			else if (this.moves[2] && grids[this.gridId+1].rock <= 981 && grids[this.gridId+1].occupied === false) {
+			else if (this.moves[2] && grids[this.gridId+1].rock <= 990 && grids[this.gridId+1].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId+1].own(index, this.id);
-				this.smooth = ['down', grids[this.gridId+1].delay, grids[this.gridId+1].x, grids[this.gridId+1].y];
+				this.smooth = 1;
 			}
-			else if (this.moves[3] && grids[this.gridId-100].rock <= 981 && grids[this.gridId-100].occupied === false) {
+			else if (this.moves[3] && grids[this.gridId-100].rock <= 990 && grids[this.gridId-100].occupied === false) {
 				this.contesting = true;
 				grids[this.gridId-100].own(index, this.id);
-				this.smooth = ['left', grids[this.gridId-100].delay, grids[this.gridId-100].x, grids[this.gridId-100].y];
+				this.smooth = -100;
 			}
 			//Building
 			else if (this.moves[4] !== false) {
@@ -269,34 +275,59 @@ Player.prototype.update = function() {
 		}
 
 		//Move camera smoothly
-	    if (typeof this.smooth[0] === 'string' && this.smoothMoving === false) {
+	    if (typeof this.smooth === 'number' && this.smoothMoving === false) {
+	    	var oldGridId = this.gridId;
 	    	this.smoothMoving = true;
 
+
+			var interval = grids[oldGridId+this.smooth].rock > 980 && grids[oldGridId+this.smooth].rock <= 990 ? 42 : grids[oldGridId+this.smooth].delay/25;
+
+			var dist = grids[oldGridId+this.smooth].rock > 980 && grids[oldGridId+this.smooth].rock <= 990 ? 1 : 2; 
+
 	    	var smoothCamera = setInterval(() => {
-				if (this.smooth[0] === 'up') {
-		          this.y-=2;
+				if (this.smooth === -1) {
+		          this.y-=dist;
 		        }
-		        else if (this.smooth[0] === 'right') {
-		          this.x+=2;
+		        else if (this.smooth === 100) {
+		          this.x+=dist;
 		        }
-		        else if (this.smooth[0] === 'down') {
-		          this.y+=2;
+		        else if (this.smooth === 1) {
+		          this.y+=dist;
 		        }
-		        else if (this.smooth[0] === 'left') {
-		          this.x-=2;
+		        else if (this.smooth === -100) {
+		          this.x-=dist;
 		        }
 
-		        if (Math.abs(this.x-this.smooth[2]) <= 6 && Math.abs(this.y-this.smooth[3]) <= 6) {
-		        	iterations = 1;
+		        if (Math.abs(grids[oldGridId+this.smooth].x-this.x) <= 4 && Math.abs(grids[oldGridId+this.smooth].y-this.y) <= 4) {
 		        	this.smoothMoving = false;
-		        	this.smooth = [0, 0, 0, 0];
+		        	this.smooth = null;
+		        	clearInterval(smoothCamera);
+
+		        }
+		        else if (Math.abs(grids[oldGridId+this.smooth].x-this.x) >= 55 || Math.abs(grids[oldGridId+this.smooth].y-this.y) >= 55) {
+		        	this.smoothMoving = false;
+		        	this.smooth = null;
 		        	clearInterval(smoothCamera);
 		        }
-	    	}, this.smooth[1]/25);
+	        	// console.log(Math.abs(grids[oldGridId+this.smooth].x-this.x) + ' ' + Math.abs(grids[oldGridId+this.smooth].y-this.y));
+	    	}, interval);
 		}
-
 	}
 	catch (e) {
+		console.log(e);
+	}
+};
+Player.prototype.chat = function(message) {
+	try {
+		if (!this.message) {
+			this.message = message.length > 25 ? this.message = message.slice(0, 25) : message;
+
+			var hide = setTimeout(() => {
+				this.message = '';
+			}, 4000);
+		}
+	}
+	catch (e) {m
 		console.log(e);
 	}
 };
@@ -329,19 +360,19 @@ function Grid(x, y) {
 	this.health = 40;
 
 	if (this.x == 0 || this.y == 0 || this.x == 4950 || this.y == 4950) {
-		this.rock = 990;
+		this.rock = 1000;
 	}
 
 	this.rock <= 750 ? this.delay = 300 :
 	this.rock <= 950 ? this.delay = 600 :
 	this.rock <= 980 ? this.delay = 900 : 
-	this.rock <= 981 ? this.delay = 2000 :
+	this.rock <= 990 ? this.delay = 2100 :
 	this.rock <= 1000 ? this.delay = 0 : this.delay = 0;
 
 	this.rock <= 750 ? this.image = 0 :
 	this.rock <= 950 ? this.image = 1 :
 	this.rock <= 980 ? this.image = 2 : 
-	this.rock <= 981 ? this.image = 3 : 
+	this.rock <= 990 ? this.image = 3 : 
 	this.rock <= 1000 ? this.image = 4 : this.image = 4;
 };
 Grid.prototype.own = function(index, id) {	
@@ -363,7 +394,7 @@ Grid.prototype.own = function(index, id) {
 					else if (this.rock <= 980) {
 						players[index].stones[2]++;
 					}
-					else if (this.rock <= 981) {
+					else if (this.rock <= 990) {
 						players[index].stones[3]++;
 					}
 
@@ -398,7 +429,7 @@ Grid.prototype.own = function(index, id) {
 				players[index].gridId = this.gridId;
 				players[index].x = this.x;
 				players[index].y = this.y;
-				players[index].contesting = false;
+				players[index].contesting = false
 			},200);
 		}
 	}
@@ -423,21 +454,21 @@ Grid.prototype.build = function(rock) {
 
 Grid.prototype.playerAttack = function(index) {
 
-	var damage = this.image == 5 ? .5 :
-				 this.image == 6 ? .25 :
-				 this.image == 7 ? .15 :
+	var damage = this.image == 5 ? .30 :
+				 this.image == 6 ? .20 :
+				 this.image == 7 ? .10 :
 				 this.image == 8 ? .04 : 0;
 
-	if (Math.floor(this.health) == 40) {
+	if (Math.trunc(this.health) == 40) {
 		this.heal(damage);
 	}
-
 	this.health -= damage;
 
 	if (this.health <= 0) {
 		var stoneReceived = this.image == 5 ? 7 :
 							this.image == 6 ? 4 :
 							this.image == 7 ? 2 : 0;
+							
 		players[index].stones[this.image-5] += stoneReceived;
 		this.reset();
 	}
@@ -446,32 +477,16 @@ Grid.prototype.playerAttack = function(index) {
 Grid.prototype.heal = function(damage) {
 	setTimeout(() => {
 		var healing = setInterval(() => {
-			if (Math.floor(this.health) < 40) {
+			if (Math.trunc(this.health) < 40) {
 				this.health += damage;
 			}
-			else if (Math.floor(this.health) == 40) {
+			else if (Math.trunc(this.health) == 40) {
 				this.health = 40;
 				clearInterval(healing);
 			}
 			updatedGrids.push(this);
 		},1000);
-	},2000);
-};
-Grid.prototype.chat = function(message, index) {
-	try {
-		this.message = message.length > 25 ? this.message = message.slice(0, 25) : message;
-
-		updatedGrids.push(this);
-
-		setTimeout(function hidess() {
-			grids[index].message = '';
-			updatedGrids.push(grids[index]);
-		}, 2000);
-		clearTimeout(hidess);
-	}
-	catch (e) {
-		console.log(e);
-	}
+	},2100);
 };
 Grid.prototype.reset = function(rock) {
 	try {
@@ -487,13 +502,13 @@ Grid.prototype.reset = function(rock) {
 		this.rock <= 750 ? this.delay = 300 :
 		this.rock <= 950 ? this.delay = 600 :
 		this.rock <= 980 ? this.delay = 900 : 
-		this.rock <= 981 ? this.delay = 2000 :
+		this.rock <= 990 ? this.delay = 2100 :
 		this.rock <= 1000 ? this.delay = 0 : this.delay = 0;
 
 		this.rock <= 750 ? this.image = 0 :
 		this.rock <= 950 ? this.image = 1 :
 		this.rock <= 980 ? this.image = 2 : 
-		this.rock <= 981 ? this.image = 3 : 
+		this.rock <= 990 ? this.image = 3 : 
 		this.rock <= 1000 ? this.image = 4 : 
 		this.rock == 1000 ? this.image = 5 :
 		this.rock == 1001 ? this.image = 6 :

@@ -129,15 +129,13 @@
   }
   #chatPreview {
     white-space: nowrap;
-    font-size: 30px;
+    font-size: 25px;
     position: absolute;
     background-color: rgba(0, 0, 0, .5);
     width: auto;
-    min-width: 10px;
-    min-height: 45px;
     height: auto;
     left: 50%;
-    top: -80px;
+    top: -76px;
     transform: translate(-50%, 0);
   }
 
@@ -148,7 +146,7 @@
 
 <div id="shadow"></div>
 
-<img id="head" src="http://lawebloca.com/wp-content/uploads/2012/10/minecraft-creeper-face1.jpg">
+<img id="head" src="http://i1341.photobucket.com/albums/o751/Joacko_/Zombieface_zpscd3b62eb.png">
 
 <img id="rock1" src="http://rtstextures.bitballoon.com/rock1.jpg">
 <img id="rock2" src="http://rtstextures.bitballoon.com/rock2.jpg">
@@ -204,15 +202,10 @@ var HOST = location.origin.replace(/^http/, 'ws');
 //Online
 var ws = new WebSocket(HOST);
 
-//Local
-//ws = new WebSocket('ws://localhost:3000');
-
 var canvas = document.getElementById('game');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 var ctx = canvas.getContext('2d');
-ctx.textAlign = 'center';
-ctx.font = '30px Shrikhand';
 
 window.addEventListener("resize", function() {
   canvas.width = window.innerWidth;
@@ -273,9 +266,19 @@ ws.onmessage = function(e) {
 
     if (player.ready === true) {
       player.control();
+      drawTimer();
+
+      for (var i=0; i<message.players.length; i++) {
+        if (message.players[i][2]) {
+          ctx.textAlign = 'center';
+          ctx.font = '25px Shrikhand';
+          ctx.fillStyle = 'white';
+          ctx.fillText(message.players[i][2], message.players[i][0]+25, message.players[i][1]);
+        }
+        ctx.drawImage(head, message.players[i][0]+7, message.players[i][1]+7, 36, 36);
+      }
     }
   }
-
   //Player just joined
   else if (message.type == 'initPlayer') {
     player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
@@ -285,7 +288,6 @@ ws.onmessage = function(e) {
       type: 'initPlayer',
       info: player
     })); 
-    drawTimer();
   }
 } 
 
@@ -318,7 +320,6 @@ function Players(x, y, id, moves, gridId) {
   this.ready = true;
 
   this.control = function() {
-    this.ready = false;
 
     if (!this.building && !this.chatting) {
       this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
@@ -360,8 +361,8 @@ function Players(x, y, id, moves, gridId) {
     this.camera();
   };
   this.camera = function() {
-    this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-100 > 0 ? this.viewStartGrid = this.gridId-Math.floor(this.canvasWidth)-Math.floor(this.canvasHeight/100)-100 : 0;
-    this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+100 < grids.length ? this.viewEndGrid = this.gridId+Math.floor(this.canvasWidth)+Math.floor(this.canvasHeight/100)+100 : 10000;
+    this.viewStartGrid = this.gridId-Math.trunc(canvas.width)-Math.trunc(canvas.height/100)-100 > 0 ? this.viewStartGrid = this.gridId-Math.trunc(canvas.width)-Math.trunc(canvas.height/100)-100 : 0;
+    this.viewEndGrid = this.gridId+Math.trunc(canvas.height)+Math.trunc(canvas.height/100)+100 < grids.length ? this.viewEndGrid = this.gridId+Math.trunc(canvas.width)+Math.trunc(canvas.height/100)+100 : 10000;
   };
   this.build = function(e) {
     if (this.smoothMoving === false) {
@@ -382,8 +383,6 @@ function Players(x, y, id, moves, gridId) {
                         e == 1 ? 1 : 
                         e == 2 ? 2 :
                         e == 3 ? 3 : null;
-
-
       }
       else if (e == 'close' && this.building === true) {
         if (document.getElementById('buildMenu').classList.contains('show')) {
@@ -406,7 +405,6 @@ function Players(x, y, id, moves, gridId) {
         id: this.id,
         info: this.message
       })); 
-
       this.message = '';
       this.chatting = false;
     }
@@ -488,23 +486,22 @@ function Players(x, y, id, moves, gridId) {
 
 
 function drawTimer() {
+  player.ready = false;
   ctx.clearRect(player.x-canvas.width/2+25, player.y-canvas.height/2+25, canvas.width, canvas.height);
 
   ctx.setTransform(1, 0, 0, 1, -player.x-25+canvas.width/2, -player.y-25+canvas.height/2);
-  ctx.drawImage(head, player.x+7, player.y+7, 36, 36);
 
   for (var i=player.viewStartGrid; i<player.viewEndGrid; i++) {
     var a = i.toString().slice(-2);
     var b = player.gridId.toString().slice(-2);
-    if (b-a>=0 && b-a <= 10 || a-b>=0 && a-b <= 10) {
+    //Limit vertival render
+    if (b-a>=0 && b-a <= Math.trunc(canvas.height/100) || a-b>=0 && a-b <= Math.trunc(canvas.height/100)) {
       draw(i);
     }
-
-      if (i+1 == player.viewEndGrid) {
-        player.ready = true;
-      }    
+    if (i+1 == player.viewEndGrid) {
+      player.ready = true;
+    }    
   }
-  requestAnimationFrame(drawTimer);
 }
 
 
@@ -517,42 +514,21 @@ function drawTimer() {
 
 
 function draw(index) {
-
-  ctx.beginPath();
-
   //Textured rocks
   if (grids[index].rock) {
-    if (grids[index].health < 40 && grids[index].health > 0) {
-      // console.log(grids[index].health);
-      ctx.rect(grids[index].x+5, grids[index].y+22, grids[index].health, 8);
-      ctx.fillStyle = '#99ff66';
-      ctx.fill();
-      ctx.rect(grids[index].x+5, grids[index].y+22, 40, 8);
-      ctx.fillStyle = '#ff6666';
-      ctx.fill();
-    }
     ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
+    if (grids[index].health < 40 && grids[index].health > 0) {
+      ctx.fillStyle = '#ff6666';
+      ctx.fillRect(grids[index].x+5, grids[index].y+22, 40, 8);
+      ctx.fillStyle = '#99ff66';
+      ctx.fillRect(grids[index].x+5, grids[index].y+22, grids[index].health, 8);
+    }
   }
-  //Other player
-  if (grids[index].occupied === true && grids[index].owner !== player.id) {
-    ctx.drawImage(head, grids[index].x+7, grids[index].y+7, 36, 36);
-    ctx.rect(grids[index].x, grids[index].y, 50, 50);
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
-    ctx.fill();
-  }  
   //Player path
   else if (typeof grids[index].owner === 'number') {
-    ctx.rect(grids[index].x, grids[index].y, 50, 50);
     ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
-    ctx.fill();
+    ctx.fillRect(grids[index].x, grids[index].y, 50, 50);
   }
-  //Message
-  if (grids[index].message) {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'white';
-    ctx.fillText(grids[index].message, grids[index].x+25, grids[index].y);
-  }
-  ctx.globalCompositeOperation = 'destination-over'; 
 }
 
 
@@ -601,7 +577,7 @@ window.addEventListener('keydown', function(e) {
     player.chat();
   }
   if (player.chatting === true && e.keyCode != 13) {
-    if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32) {
+    if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32 || e.keyCode >= 186 && e.keyCode <= 222) {
       player.message += e.key;
     }
     else if (e.keyCode == 8) {
