@@ -138,6 +138,14 @@
     top: -76px;
     transform: translate(-50%, 0);
   }
+  #minimap {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    background-color: red;
+    width: 50px;
+    height: 50px;
+  }
 
 
 </style>
@@ -180,10 +188,10 @@
  --></div>
 
 <div id="buildMenu" class="hide">
-  <div id="build1" class="cannotAfford"><p class="stoneAmount">10</p><p>DIRT</p></div>
-  <div id="build2" class="cannotAfford"><p class="stoneAmount">5</p><p>STONE</p></div>
-  <div id="build3" class="cannotAfford"><p class="stoneAmount">3</p><p>GOLD</p></div>
-  <div id="build4" class="cannotAfford"><p class="stoneAmount">1</p><p>DIAM</p></div>
+  <div id="wall1" class="cannotAfford"><p class="stoneAmount">10</p><p>DIRT</p></div>
+  <div id="wall2" class="cannotAfford"><p class="stoneAmount">5</p><p>STONE</p></div>
+  <div id="wall3" class="cannotAfford"><p class="stoneAmount">3</p><p>GOLD</p></div>
+  <div id="wall4" class="cannotAfford"><p class="stoneAmount">1</p><p>DIAM</p></div>
 </div>
 
 <div id="chatInstruction" class="hide">
@@ -191,6 +199,8 @@
   <p>ESC = Close</p>
   <p id="chatPreview"></p>
 </div>
+
+<div id="minimap"></div>
 
 <script>
 
@@ -318,6 +328,7 @@ function Players(x, y, id, moves, gridId) {
   this.viewStartGrid = 0;
   this.viewEndGrid = 0;
   this.ready = true;
+  this.subHUD = null;
 
   this.control = function() {
 
@@ -386,6 +397,7 @@ function Players(x, y, id, moves, gridId) {
       }
       else if (e == 'close' && this.building === true) {
         if (document.getElementById('buildMenu').classList.contains('show')) {
+          this.subHUD = null;
           document.getElementById('buildMenu').classList.add('hide');
           document.getElementById('buildMenu').classList.remove('show');
         }
@@ -395,6 +407,7 @@ function Players(x, y, id, moves, gridId) {
       }
     }
   };
+
   this.chat = function() {
     if (this.chatting === false) {
       this.chatting = true;
@@ -409,7 +422,68 @@ function Players(x, y, id, moves, gridId) {
       this.chatting = false;
     }
   };
+
   this.HUD = function() {
+    if (this.building == true) {
+      console.log(this.subHUD);
+
+      //Close menu
+      if (grids[this.gridId].rock >= 1000) {
+        this.build('close');
+      }
+
+      if (this.subHUD === null) {
+        this.subHUD = this.moves[0] ? 0 : this.moves[1] ? 1 : this.moves[2] ? 2 : this.moves[3] ? 3 : null;
+      }
+
+      //Build walls
+      if (this.subHUD == 0) {
+        // var canAffordWall1 = this.stones[0] >= 10 ? 'canAfford' : 'cannotAfford';
+        // document.getElementById('wall1').classList.add(canAffordWall1);
+        if (this.stones[0] >= 10 && document.getElementById('wall1').classList.contains('cannotAfford')) {
+          document.getElementById('wall1').classList.add('canAfford');
+          document.getElementById('wall1').classList.remove('cannotAfford');
+        }
+        else if (this.stones[0] < 10 && document.getElementById('wall1').classList.contains('canAfford')) {
+          document.getElementById('wall1').classList.add('cannotAfford');
+          document.getElementById('wall1').classList.remove('canAfford');
+        }
+        if (this.stones[1] >= 5 && document.getElementById('wall2').classList.contains('cannotAfford')) {
+          document.getElementById('wall2').classList.add('canAfford');
+          document.getElementById('wall2').classList.remove('cannotAfford');
+        }
+        else if (this.stones[1] < 5 && document.getElementById('wall2').classList.contains('canAfford')) {
+          document.getElementById('wall2').classList.add('cannotAfford');
+          document.getElementById('wall2').classList.remove('canAfford');
+        }
+        if (this.stones[2] >= 3 && document.getElementById('build3').classList.contains('cannotAfford')) {
+          document.getElementById('build3').classList.add('canAfford');
+          document.getElementById('build3').classList.remove('cannotAfford');
+        }
+        else if (this.stones[2] < 3 && document.getElementById('build3').classList.contains('canAfford')) {
+          document.getElementById('build3').classList.add('cannotAfford');
+          document.getElementById('build3').classList.remove('canAfford');
+        }
+        if (this.stones[3] >= 1 && document.getElementById('build4').classList.contains('cannotAfford')) {
+          document.getElementById('build4').classList.add('canAfford');
+          document.getElementById('build4').classList.remove('cannotAfford');
+        }
+        else if (this.stones[3] < 1 && document.getElementById('build4').classList.contains('canAfford')) {
+          document.getElementById('build4').classList.add('cannotAfford');
+          document.getElementById('build4').classList.remove('canAfford');
+        }
+      }
+      else if (this.subHUD == 1) {
+        console.log('1');
+      }
+      else if (this.subHUD == 2) {
+        console.log('2');
+      }
+      else if (this.subHUD == 3) {
+        console.log('3');
+      }
+    }
+
     //Bottom bar
     if (document.getElementsByClassName('slotValue')[0].innerHTML != this.stones[0]) {
       document.getElementsByClassName('slotValue')[0].innerHTML = this.stones[0];
@@ -422,43 +496,6 @@ function Players(x, y, id, moves, gridId) {
     }
     if (document.getElementsByClassName('slotValue')[3].innerHTML != this.stones[3]) {
       document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
-    }
-
-    //Build menu
-    if (this.stones[0] >= 10 && document.getElementById('build1').classList.contains('cannotAfford')) {
-      document.getElementById('build1').classList.add('canAfford');
-      document.getElementById('build1').classList.remove('cannotAfford');
-    }
-    else if (this.stones[0] < 10 && document.getElementById('build1').classList.contains('canAfford')) {
-      document.getElementById('build1').classList.add('cannotAfford');
-      document.getElementById('build1').classList.remove('canAfford');
-    }
-    if (this.stones[1] >= 5 && document.getElementById('build2').classList.contains('cannotAfford')) {
-      document.getElementById('build2').classList.add('canAfford');
-      document.getElementById('build2').classList.remove('cannotAfford');
-    }
-    else if (this.stones[1] < 5 && document.getElementById('build2').classList.contains('canAfford')) {
-      document.getElementById('build2').classList.add('cannotAfford');
-      document.getElementById('build2').classList.remove('canAfford');
-    }
-    if (this.stones[2] >= 3 && document.getElementById('build3').classList.contains('cannotAfford')) {
-      document.getElementById('build3').classList.add('canAfford');
-      document.getElementById('build3').classList.remove('cannotAfford');
-    }
-    else if (this.stones[2] < 3 && document.getElementById('build3').classList.contains('canAfford')) {
-      document.getElementById('build3').classList.add('cannotAfford');
-      document.getElementById('build3').classList.remove('canAfford');
-    }
-    if (this.stones[3] >= 1 && document.getElementById('build4').classList.contains('cannotAfford')) {
-      document.getElementById('build4').classList.add('canAfford');
-      document.getElementById('build4').classList.remove('cannotAfford');
-    }
-    else if (this.stones[3] < 1 && document.getElementById('build4').classList.contains('canAfford')) {
-      document.getElementById('build4').classList.add('cannotAfford');
-      document.getElementById('build4').classList.remove('canAfford');
-    }
-    if (grids[this.gridId].rock >= 1000) {
-      this.build('close');
     }
 
     //Chat instructions
@@ -475,7 +512,6 @@ function Players(x, y, id, moves, gridId) {
     }
   };
 };
-
 
 
 
@@ -503,6 +539,13 @@ function drawTimer() {
     }    
   }
 }
+
+
+setInterval(function() {
+  var img = canvas.toDataURL();
+  img.crossOrigin = "Anonymous";
+  img.src = document.getElementById("minimap").value;
+}, 2000);
 
 
 
@@ -578,7 +621,9 @@ window.addEventListener('keydown', function(e) {
   }
   if (player.chatting === true && e.keyCode != 13) {
     if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32 || e.keyCode >= 186 && e.keyCode <= 222) {
-      player.message += e.key;
+      if (player.message.length < 45) {
+        player.message += e.key;
+      }
     }
     else if (e.keyCode == 8) {
       player.message = player.message.slice(0, -1);

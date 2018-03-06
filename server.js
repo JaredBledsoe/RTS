@@ -320,7 +320,7 @@ Player.prototype.update = function() {
 Player.prototype.chat = function(message) {
 	try {
 		if (!this.message) {
-			this.message = message.length > 25 ? this.message = message.slice(0, 25) : message;
+			this.message = message.length > 45 ? this.message = message.slice(0, 45) : message;
 
 			var hide = setTimeout(() => {
 				this.message = '';
@@ -523,3 +523,5 @@ Grid.prototype.reset = function(rock) {
 		console.log(e);
 	}
 };
+
+
