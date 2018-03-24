@@ -1,660 +1,710 @@
 <html>
+
 <head>
-<link href="https://fonts.googleapis.com/css?family=Shrikhand" rel="stylesheet">
-<link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'><style>
+    <link href="https://fonts.googleapis.com/css?family=Shrikhand" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+    <style>
+    body {
+        margin: 0;
+        user-select: none;
+        overflow: hidden;
+        background-image: url('https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg');
+        background-repeat: repeat;
+        background-size: 20%;
+    }
 
-  body {
-    margin: 0;
-    user-select: none;
-    overflow: hidden;
-    background-image: url('https://i.pinimg.com/736x/2e/f4/71/2ef471c9d20d2a040816906288f92992--floor-texture-rock-texture.jpg');
-    background-repeat: repeat;
-    background-size: 20%;
-  }
-  .hide {
-    display: none;
-  }
-  .show {
-    display: initial;
-  }
-  #shadow {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    box-shadow: inset 0px 0px 150px 50px rgb(0, 0, 0);
-  }
-  canvas {
-    box-shadow: inset 0px 0px 500px 150px rgb(0, 0, 0);
-  }
-  img {
-    position: absolute;
-    display: none;
-  }
-  #hud {
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, 0);
-    height: 50px;
-    bottom: 5%;
-    white-space: nowrap;
-  }
-  #controls {
-    width: 500px;
-    height: 500px;
-    position: absolute;
-    background-image: url('../public/images/controls.png');
-    top: 5px;
-    left: 5px;
-  }
-  .slot {
-    width: 80px;
-    height: 80px;
-    display: inline-block;
-    box-shadow: inset 0px 0px 15px 5px rgba(0,0,0,0.75);
-    background-color: rgba(0, 0, 0, .25);
-    font-size: 20px;
-    color: white;
-  }
-  .slotValue {
-    margin: 0 5px;
-    font-family: 'Shrikhand', cursive;
-  }
-  .select {
-    background-color: rgba(255, 255, 255, .25);
-  }
-  #buildMenu, #chatInstruction {
-    position: absolute;
-    text-align: center;
-    z-index: 10;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, 0);
-    font-family: 'Shrikhand', cursive;
-    font-weight: bold;
-    font-size: 14px;
-    font-weight: 300;
-  }
-  #buildMenu p {
-    margin: 0;
-  }
-  #build1, #build2, #build3, #build4 {
-    border-radius: 10px;
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-repeat: no-repeat;
-    background-position: center; 
-    background-size: 40px 40px;
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: black;
-    vertical-align: middle;
-  }
-  .canAfford {
-    color: #99ff66;
-    background-color: #99ff66;
-  }
-  .cannotAfford {
-    color: #ff6666;
-    background-color: #ff6666;
-  }
-  .stoneAmount {
-    margin-top: 5px !important;
-  }
-  #build1 {
-    top: -75px;
-    left: -25px;
-    background-image: url('http://rtstextures.bitballoon.com/rock5.jpg');
-  }
-  #build2 {
-    top: -25px;
-    left: 25px;
-    background-image: url('http://rtstextures.bitballoon.com/rock6.jpg');
-  }
-  #build3 {
-    top: 25px;
-    left: -25px;
-    background-image: url('http://rtstextures.bitballoon.com/rock7.jpg');
-  }
-  #build4 {
-    top: -25px;
-    left: -75px;
-    background-image: url('http://rtstextures.bitballoon.com/rock8.jpg');
-  }
-  #chatInstruction {
-    margin-top: 25px;
-  }
-  #chatInstruction p {
-    color: white;
-    margin: 0;
-  }
-  #chatPreview {
-    white-space: nowrap;
-    font-size: 25px;
-    position: absolute;
-    background-color: rgba(0, 0, 0, .5);
-    width: auto;
-    height: auto;
-    left: 50%;
-    top: -76px;
-    transform: translate(-50%, 0);
-  }
-  #minimap {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    background-color: red;
-    width: 50px;
-    height: 50px;
-  }
+    p {
+        margin: 0;
+    }
 
+    .hide {
+        display: none;
+    }
 
-</style>
+    .show {
+        display: initial;
+    }
+
+    #shadow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        box-shadow: inset 0px 0px 150px 50px rgb(0, 0, 0);
+    }
+
+    canvas {
+        box-shadow: inset 0px 0px 500px 150px rgb(0, 0, 0);
+    }
+
+    img {
+        position: absolute;
+        display: none;
+    }
+
+    #hud {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        height: 50px;
+        bottom: 5%;
+        white-space: nowrap;
+    }
+
+    #controls {
+        width: 500px;
+        height: 500px;
+        position: absolute;
+        background-image: url('../public/images/controls.png');
+        top: 5px;
+        left: 5px;
+    }
+
+    .slot {
+        width: 80px;
+        height: 80px;
+        display: inline-block;
+        box-shadow: inset 0px 0px 15px 5px rgba(0, 0, 0, 0.75), 0px 0px 30px 0px rgba(0, 0, 0, 0.75);
+        background-color: rgba(0, 0, 0, .25);
+        font-size: 20px;
+        color: white;
+    }
+
+    .slotValue {
+        text-shadow: 0 0 15px rgba(0, 0, 0, .75);
+        margin: 0 5px;
+        font-family: 'Shrikhand', cursive;
+    }
+
+    .select {
+        background-color: rgba(255, 255, 255, .25);
+    }
+
+    #buildMenu,
+    #chatInstruction {
+        position: absolute;
+        text-align: center;
+        z-index: 10;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, 0);
+        font-family: 'Shrikhand', cursive;
+        font-weight: bold;
+        font-size: 14px;
+        font-weight: 300;
+    }
+
+    .rock1,
+    .rock2,
+    .rock3,
+    .rock4,
+    .buildSection {
+        border-radius: 10px;
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 40px 40px;
+        -webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: black;
+        vertical-align: middle;
+    }
+
+    .canAfford {
+        color: #99ff66;
+        background-color: #99ff66;
+        box-shadow: 0 0 20px 2px #99ff66;
+        text-shadow: 0 0 10px #99ff66;
+    }
+
+    .cannotAfford {
+        color: #ff6666;
+        background-color: #ff6666;
+        box-shadow: 0 0 20px 2px #ff6666;
+        text-shadow: 0 0 10px #ff6666;
+    }
+
+    .stoneAmount {
+        margin-top: 5px !important;
+    }
+
+    .rock1 {
+        top: -75px;
+        left: -25px;
+        background-image: url('http://rtstextures.bitballoon.com/rock5.jpg');
+    }
+
+    .rock2 {
+        top: -25px;
+        left: 25px;
+        background-image: url('http://rtstextures.bitballoon.com/rock6.jpg');
+    }
+
+    .rock3 {
+        top: 25px;
+        left: -25px;
+        background-image: url('http://rtstextures.bitballoon.com/rock7.jpg');
+    }
+
+    .rock4 {
+        top: -25px;
+        left: -75px;
+        background-image: url('http://rtstextures.bitballoon.com/rock8.jpg');
+    }
+
+    #chatInstruction {
+        margin-top: 25px;
+    }
+
+    #chatInstruction p {
+        color: white;
+        margin: 0;
+    }
+
+    #chatPreview {
+        white-space: nowrap;
+        font-size: 25px;
+        position: absolute;
+        background-color: rgba(0, 0, 0, .5);
+        width: auto;
+        height: auto;
+        left: 50%;
+        top: -76px;
+        transform: translate(-50%, 0);
+    }
+
+    .buildSection {
+        position: absolute;
+    }
+
+    .buildTitle {
+        margin-top: 15px;
+    }
+
+    .buildMain {
+        background-color: gold;
+        color: gold;
+        box-shadow: 0 0 20px 2px gold;
+        text-shadow: 0 0 10px gold;
+    }
+    </style>
 </head>
+
 <body>
+    <div id="shadow"></div>
+    <img id="head" src="http://i1341.photobucket.com/albums/o751/Joacko_/Zombieface_zpscd3b62eb.png">
+    <img class="rock1" src="http://rtstextures.bitballoon.com/rock1.jpg">
+    <img class="rock2" src="http://rtstextures.bitballoon.com/rock2.jpg">
+    <img class="rock3" src="http://rtstextures.bitballoon.com/rock3.jpg">
+    <img class="rock4" src="http://rtstextures.bitballoon.com/rock4.jpg">
+    <img class="rock5" src="http://rtstextures.bitballoon.com/lava.jpg">
+    <img class="wall1" src="http://rtstextures.bitballoon.com/rock5.jpg">
+    <img class="wall2" src="http://rtstextures.bitballoon.com/rock6.jpg">
+    <img class="wall3" src="http://rtstextures.bitballoon.com/rock7.jpg">
+    <img class="wall4" src="http://rtstextures.bitballoon.com/rock8.jpg">
+    <img id="crack1" src="http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png">
+    <img id="crack2" src="http://www.textures4photoshop.com/tex/thumbs/cracked-wall-PNG-texture-thumb24.png">
+    <img id="crack3" src="http://www.textures4photoshop.com/tex/thumbs/broken-mirror-with-glass-shards-png-608.png">
+    <canvas id="game"></canvas>
+    <div id="hud">
+        <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.jpg')">
+            <p class="slotValue">0</p>
+        </div>
+        <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.jpg')">
+            <p class="slotValue">0</p>
+        </div>
+        <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.jpg')">
+            <p class="slotValue">0</p>
+        </div>
+        <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.jpg')">
+            <p class="slotValue">0</p>
+        </div>
+    </div>
+    <div id="buildMenu" class="hide">
+        <div class="buildSection" class="hide">
+            <div class="rock1 buildMain">
+                <p class="buildTitle">Walls</p>
+            </div>
+            <div class="rock2 buildMain">
+                <p class="buildTitle">Turrets</p>
+            </div>
+            <div class="rock3 buildMain">
+                <p class="buildTitle">Heal</p>
+            </div>
+            <div class="rock4 buildMain">
+                <p class="buildTitle">Misc</p>
+            </div>
+        </div>
+        <div class="buildSection" class="hide">
+            <div class="rock1" class="cannotAfford">
+                <p class="stoneAmount">10</p>
+                <p>DIRT</p>
+            </div>
+            <div class="rock2" class="cannotAfford">
+                <p class="stoneAmount">5</p>
+                <p>STONE</p>
+            </div>
+            <div class="rock3" class="cannotAfford">
+                <p class="stoneAmount">3</p>
+                <p>GOLD</p>
+            </div>
+            <div class="rock4" class="cannotAfford">
+                <p class="stoneAmount">1</p>
+                <p>DIAM</p>
+            </div>
+        </div>
+        <div class="buildSection" class="hide">
+            <div class="rock1" class="cannotAfford">
+                <p class="stoneAmount">10</p>
+                <p>DIRT2</p>
+            </div>
+            <div class="rock2" class="cannotAfford">
+                <p class="stoneAmount">5</p>
+                <p>STONE</p>
+            </div>
+            <div class="rock3" class="cannotAfford">
+                <p class="stoneAmount">3</p>
+                <p>GOLD</p>
+            </div>
+            <div class="rock4" class="cannotAfford">
+                <p class="stoneAmount">1</p>
+                <p>DIAM</p>
+            </div>
+        </div>
+        <div class="buildSection" class="hide">
+            <div class="rock1" class="cannotAfford">
+                <p class="stoneAmount">10</p>
+                <p>DIRT3</p>
+            </div>
+            <div class="rock2" class="cannotAfford">
+                <p class="stoneAmount">5</p>
+                <p>STONE</p>
+            </div>
+            <div class="rock3" class="cannotAfford">
+                <p class="stoneAmount">3</p>
+                <p>GOLD</p>
+            </div>
+            <div class="rock4" class="cannotAfford">
+                <p class="stoneAmount">1</p>
+                <p>DIAM</p>
+            </div>
+        </div>
+        <div class="buildSection" class="hide">
+            <div class="rock1" class="cannotAfford">
+                <p class="stoneAmount">10</p>
+                <p>DIRT4</p>
+            </div>
+            <div class="rock2" class="cannotAfford">
+                <p class="stoneAmount">5</p>
+                <p>STONE</p>
+            </div>
+            <div class="rock3" class="cannotAfford">
+                <p class="stoneAmount">3</p>
+                <p>GOLD</p>
+            </div>
+            <div class="rock4" class="cannotAfford">
+                <p class="stoneAmount">1</p>
+                <p>DIAM</p>
+            </div>
+        </div>
+    </div>
+    <div id="chatInstruction" class="hide">
+        <p>ENTER = Send</p>
+        <p>ESC = Close</p>
+        <p id="chatPreview"></p>
+    </div>
+    <script>
+    var HOST = location.origin.replace(/^http/, 'ws');
 
-<div id="shadow"></div>
+    //Online
+    var ws = new WebSocket(HOST);
 
-<img id="head" src="http://i1341.photobucket.com/albums/o751/Joacko_/Zombieface_zpscd3b62eb.png">
+    var canvas = document.getElementById('game');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var ctx = canvas.getContext('2d');
 
-<img id="rock1" src="http://rtstextures.bitballoon.com/rock1.jpg">
-<img id="rock2" src="http://rtstextures.bitballoon.com/rock2.jpg">
-<img id="rock3" src="http://rtstextures.bitballoon.com/rock3.jpg">
-<img id="rock4" src="http://rtstextures.bitballoon.com/rock4.jpg">
-<img id="rock5" src="http://rtstextures.bitballoon.com/lava.jpg">
+    window.addEventListener("resize", function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
 
-<img id="wall1" src="http://rtstextures.bitballoon.com/rock5.jpg">
-<img id="wall2" src="http://rtstextures.bitballoon.com/rock6.jpg">
-<img id="wall3" src="http://rtstextures.bitballoon.com/rock7.jpg">
-<img id="wall4" src="http://rtstextures.bitballoon.com/rock8.jpg">
+    var keyStates = [];
+    var grids = [];
+    var player;
+    var arrow = document.getElementById('arrow');
+    var head = document.getElementById('head');
 
+    var rocks = [document.getElementsByClassName('rock1')[0], document.getElementsByClassName('rock2')[0], document.getElementsByClassName('rock3')[0], document.getElementsByClassName('rock4')[0], document.getElementsByClassName('rock5')[0], document.getElementsByClassName('wall1')[0], document.getElementsByClassName('wall2')[0], document.getElementsByClassName('wall3')[0], document.getElementsByClassName('wall4')[0]];
+    // var walls = [];
 
-<img id="crack1" src="http://www.textures4photoshop.com/tex/thumbs/crack-texture-png-free-thumb22.png">
-<img id="crack2" src="http://www.textures4photoshop.com/tex/thumbs/cracked-wall-PNG-texture-thumb24.png">
-<img id="crack3" src="http://www.textures4photoshop.com/tex/thumbs/broken-mirror-with-glass-shards-png-608.png">
+    var brick1 = document.getElementById('brick1');
 
-<canvas id="game"></canvas>
-  
-<!-- <div id="controls"><image src="public/images/controls.png"></div>
- -->
-<div id="hud">
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock1.jpg')"><p class="slotValue">0</p></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock2.jpg')"><p class="slotValue">0</p></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock3.jpg')"><p class="slotValue">0</p></div>
-  <div class="slot" style="background-image: url('http://rtstextures.bitballoon.com/rock4.jpg')"><p class="slotValue">0</p></div>
-<!--   <div class="slot"><p class="slotValue">0</p></div>
-  <div class="slot"><p class="slotValue">0</p></div>
-  <div class="slot"><p class="slotValue">0</p></div>
-  <div class="slot"><p class="slotValue">0</p></div>
- --></div>
+    var crack1 = document.getElementById('crack1');
+    var crack2 = document.getElementById('crack2');
+    var crack3 = document.getElementById('crack3');
 
-<div id="buildMenu" class="hide">
-  <div id="wall1" class="cannotAfford"><p class="stoneAmount">10</p><p>DIRT</p></div>
-  <div id="wall2" class="cannotAfford"><p class="stoneAmount">5</p><p>STONE</p></div>
-  <div id="wall3" class="cannotAfford"><p class="stoneAmount">3</p><p>GOLD</p></div>
-  <div id="wall4" class="cannotAfford"><p class="stoneAmount">1</p><p>DIAM</p></div>
-</div>
-
-<div id="chatInstruction" class="hide">
-  <p>ENTER = Send</p>
-  <p>ESC = Close</p>
-  <p id="chatPreview"></p>
-</div>
-
-<div id="minimap"></div>
-
-<script>
+    var characters = /^[_A-z0-9]*((-|\s)*[_A-z0-9])*$/g;
+    // window.onunload = function () {
+    //  ws.send(JSON.stringify({
+    //      type: 'close',
+    //      id: player.id
+    //     }));
+    // };
 
 
 
+    ws.onmessage = function(e) {
+        var message = JSON.parse(e.data);
+        if (message.type == 'gameUpdate') {
+            //Move viewport to center player
+            player.gridId = message.player.gridId;
+            player.smoothMoving = message.player.smoothMoving;
+            player.x = message.player.x;
+            player.y = message.player.y;
+            player.stones = message.player.stones;
+            player.health = message.player.health;
 
-var HOST = location.origin.replace(/^http/, 'ws');
+            for (var i = 0; i < message.updatedGrids.length; i++) {
+                grids[message.updatedGrids[i].gridId] = message.updatedGrids[i];
+            }
 
-//Online
-var ws = new WebSocket(HOST);
+            if (player.readyDraw === true) {
+                player.control();
+                drawTimer();
 
-var canvas = document.getElementById('game');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-var ctx = canvas.getContext('2d');
-
-window.addEventListener("resize", function() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight; 
-});
-
-var keyStates = [];
-var grids = [];
-var player;
-var arrow = document.getElementById('arrow');
-var head = document.getElementById('head');
-
-var rocks = [document.getElementById('rock1'), document.getElementById('rock2'), document.getElementById('rock3'), document.getElementById('rock4'), document.getElementById('rock5'), document.getElementById('wall1'), document.getElementById('wall2'), document.getElementById('wall3'), document.getElementById('wall4')];
-// var walls = [];
-
-var brick1 = document.getElementById('brick1');
-
-var crack1 = document.getElementById('crack1');
-var crack2 = document.getElementById('crack2');
-var crack3 = document.getElementById('crack3');
-
-var characters = /^[_A-z0-9]*((-|\s)*[_A-z0-9])*$/g;
-// window.onunload = function () {
-//  ws.send(JSON.stringify({
-//      type: 'close',
-//      id: player.id
-//     }));
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-ws.onmessage = function(e) {
-  var message = JSON.parse(e.data);
-  if (message.type == 'gameUpdate') {
-    //Move viewport to center player
-    player.gridId = message.player.gridId;
-    player.smoothMoving = message.player.smoothMoving;
-    player.x = message.player.x;
-    player.y = message.player.y;
-    player.stones = message.player.stones;
-    player.health = message.player.health;
-
-
-    for (var i=0; i<message.updatedGrids.length; i++) {
-      grids[message.updatedGrids[i].gridId] = message.updatedGrids[i];
-    }
-
-    if (player.ready === true) {
-      player.control();
-      drawTimer();
-
-      for (var i=0; i<message.players.length; i++) {
-        if (message.players[i][2]) {
-          ctx.textAlign = 'center';
-          ctx.font = '25px Shrikhand';
-          ctx.fillStyle = 'white';
-          ctx.fillText(message.players[i][2], message.players[i][0]+25, message.players[i][1]);
+                for (var i = 0; i < message.players.length; i++) {
+                    if (message.players[i][2]) {
+                        ctx.textAlign = 'center';
+                        ctx.font = '25px Shrikhand';
+                        ctx.fillStyle = 'white';
+                        ctx.fillText(message.players[i][2], message.players[i][0] + 25, message.players[i][1]);
+                    }
+                    ctx.drawImage(head, message.players[i][0] + 7, message.players[i][1] + 7, 36, 36);
+                }
+            }
         }
-        ctx.drawImage(head, message.players[i][0]+7, message.players[i][1]+7, 36, 36);
-      }
-    }
-  }
-  //Player just joined
-  else if (message.type == 'initPlayer') {
-    player = new Players(message.player.x, message.player.y, message.player.id, message.player.moves, message.player.gridId);
-    grids = message.grids;
+        //Player just joined
+        else if (message.type == 'initPlayer') {
+            player = new Players(message.player.x, message.player.y, message.player.id, message.player.move, message.player.gridId);
+            grids = message.grids;
 
-    ws.send(JSON.stringify({
-      type: 'initPlayer',
-      info: player
-    })); 
-  }
-} 
-
-
-
-
-
-
-
-
-
-
-function Players(x, y, id, moves, gridId) {
-  this.x = x;
-  this.y = y;
-  this.id = id;
-  this.moves = [false, false, false, false, false];
-  this.gridId = gridId;
-  this.smoothMoving = false;
-  this.updated = false;
-  this.building = false;
-  this.chatting = false;
-  this.health = 40;
-  this.message = '';
-  this.buildGrids = [];
-  this.buildTab = false
-  this.stones = [0, 0, 0, 0];
-  this.viewStartGrid = 0;
-  this.viewEndGrid = 0;
-  this.ready = true;
-  this.subHUD = null;
-
-  this.control = function() {
-
-    if (!this.building && !this.chatting) {
-      this.moves[0] = keyStates[38]||keyStates[87] ? this.moves[0]=true : this.moves[0]=false;
-      this.moves[1] = keyStates[39]||keyStates[68] ? this.moves[1]=true : this.moves[1]=false;
-      this.moves[2] = keyStates[40]||keyStates[83] ? this.moves[2]=true : this.moves[2]=false;
-      this.moves[3] = keyStates[37]||keyStates[65] ? this.moves[3]=true : this.moves[3]=false;
-      this.moves[4] = keyStates[49] ? this.moves[4]=true : this.moves[4]=false;
-    }
-    else if (this.building) {
-      this.moves[0] = false;
-      this.moves[1] = false;
-      this.moves[2] = false;
-      this.moves[3] = false;
-      this.moves[4] = false;
-
-      if (keyStates[38]||keyStates[87]) {
-        this.build(0);
-      }
-      else if (keyStates[39]||keyStates[68]) {
-        this.build(1);
-      }
-      else if (keyStates[40]||keyStates[83]) {
-        this.build(2);
-      }
-      else if (keyStates[37]||keyStates[65]) {
-        this.build(3);
-      }
-    }
-
-    if (this.updated === true) {
-      this.updated = false;
-      ws.send(JSON.stringify({
-        type: 'playerUpdate',
-        info: this
-      }));
-    }
-
-    this.HUD();
-    this.camera();
-  };
-  this.camera = function() {
-    this.viewStartGrid = this.gridId-Math.trunc(canvas.width)-Math.trunc(canvas.height/100)-100 > 0 ? this.viewStartGrid = this.gridId-Math.trunc(canvas.width)-Math.trunc(canvas.height/100)-100 : 0;
-    this.viewEndGrid = this.gridId+Math.trunc(canvas.height)+Math.trunc(canvas.height/100)+100 < grids.length ? this.viewEndGrid = this.gridId+Math.trunc(canvas.width)+Math.trunc(canvas.height/100)+100 : 10000;
-  };
-  this.build = function(e) {
-    if (this.smoothMoving === false) {
-      if (e == 'toggle') {
-        if (document.getElementById('buildMenu').classList.contains('hide')) {
-          this.building = true;
-          document.getElementById('buildMenu').classList.add('show');
-          document.getElementById('buildMenu').classList.remove('hide');
+            ws.send(JSON.stringify({
+                type: 'initPlayer',
+                info: player,
+                id: player.id
+            }));
         }
-        else if (document.getElementById('buildMenu').classList.contains('show')) {
-          this.building = false;
-          document.getElementById('buildMenu').classList.add('hide');
-          document.getElementById('buildMenu').classList.remove('show');
-        }
-      }
-      else if (typeof(e) == 'number') {
-        this.moves[4] = e == 0 ? 0 :
-                        e == 1 ? 1 : 
-                        e == 2 ? 2 :
-                        e == 3 ? 3 : null;
-      }
-      else if (e == 'close' && this.building === true) {
-        if (document.getElementById('buildMenu').classList.contains('show')) {
-          this.subHUD = null;
-          document.getElementById('buildMenu').classList.add('hide');
-          document.getElementById('buildMenu').classList.remove('show');
-        }
+    }
 
+
+
+
+    function Players(x, y, id, move, gridId) {
+        this.x = x;
+        this.y = y;
+        this.id = id;
+        this.move = [-1, 0];
+        this.gridId = gridId;
+        this.smoothMoving = false;
+        this.updated = false;
         this.building = false;
-        this.moves[4] = null;
-      }
-    }
-  };
+        this.chatting = false;
+        this.health = 40;
+        this.message = '';
+        this.buildGrids = [];
+        this.buildTab = false
+        this.stones = [0, 0, 0, 0];
+        this.viewStartGrid = 0;
+        this.viewEndGrid = 0;
+        this.readyDraw = true;
+        this.subHUD = 0;
+        this.readyBuild = false;
 
-  this.chat = function() {
-    if (this.chatting === false) {
-      this.chatting = true;
-    }
-    else if (this.chatting === true) {
-      ws.send(JSON.stringify({
-        type: 'chat',
-        id: this.id,
-        info: this.message
-      })); 
-      this.message = '';
-      this.chatting = false;
-    }
-  };
+        this.control = function() {
 
-  this.HUD = function() {
-    if (this.building == true) {
-      console.log(this.subHUD);
+            if (!this.building && !this.chatting) {
+                this.move[0] = keyStates[38] || keyStates[87] ? 0 :
+                    keyStates[39] || keyStates[68] ? 1 :
+                    keyStates[40] || keyStates[83] ? 2 :
+                    keyStates[37] || keyStates[65] ? 3 : -1;
+            }
 
-      //Close menu
-      if (grids[this.gridId].rock >= 1000) {
-        this.build('close');
-      }
+            if (this.updated === true) {
+                this.updated = false;
+                ws.send(JSON.stringify({
+                    type: 'playerUpdate',
+                    info: this,
+                    id: this.id
+                }));
+            }
 
-      if (this.subHUD === null) {
-        this.subHUD = this.moves[0] ? 0 : this.moves[1] ? 1 : this.moves[2] ? 2 : this.moves[3] ? 3 : null;
-      }
+            this.activeHUD();
+        };
+        this.activeHUD = function() {
+            this.viewStartGrid = this.gridId - Math.trunc(canvas.width) - Math.trunc(canvas.height / 100) - 100 > 0 ? this.viewStartGrid = this.gridId - Math.trunc(canvas.width) - Math.trunc(canvas.height / 100) - 100 : 0;
+            this.viewEndGrid = this.gridId + Math.trunc(canvas.height) + Math.trunc(canvas.height / 100) + 100 < grids.length ? this.viewEndGrid = this.gridId + Math.trunc(canvas.width) + Math.trunc(canvas.height / 100) + 100 : 10000;
 
-      //Build walls
-      if (this.subHUD == 0) {
-        // var canAffordWall1 = this.stones[0] >= 10 ? 'canAfford' : 'cannotAfford';
-        // document.getElementById('wall1').classList.add(canAffordWall1);
-        if (this.stones[0] >= 10 && document.getElementById('wall1').classList.contains('cannotAfford')) {
-          document.getElementById('wall1').classList.add('canAfford');
-          document.getElementById('wall1').classList.remove('cannotAfford');
+            //Bottom bar
+            if (document.getElementsByClassName('slotValue')[0].innerHTML != this.stones[0]) {
+                document.getElementsByClassName('slotValue')[0].innerHTML = this.stones[0];
+            }
+            if (document.getElementsByClassName('slotValue')[1].innerHTML != this.stones[1]) {
+                document.getElementsByClassName('slotValue')[1].innerHTML = this.stones[1]
+            }
+            if (document.getElementsByClassName('slotValue')[2].innerHTML != this.stones[2]) {
+                document.getElementsByClassName('slotValue')[2].innerHTML = this.stones[2];
+            }
+            if (document.getElementsByClassName('slotValue')[3].innerHTML != this.stones[3]) {
+                document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
+            }
+
+            //Close menu
+            if (grids[this.gridId].rock >= 1000 && this.building) {
+                this.build('close');
+            }
+
+            //Chat instructions
+            if (this.chatting === true && document.getElementById('chatInstruction').classList.contains('hide')) {
+                document.getElementById('chatInstruction').classList.add('show');
+                document.getElementById('chatInstruction').classList.remove('hide');
+            } else if (this.chatting === false && document.getElementById('chatInstruction').classList.contains('show')) {
+                document.getElementById('chatInstruction').classList.add('hide');
+                document.getElementById('chatInstruction').classList.remove('show');
+            }
+            if (this.chatting === true) {
+                document.getElementById('chatPreview').innerHTML = this.message;
+            }
+        };
+        this.build = function(e) {
+            if (this.smoothMoving === false) {
+                if (e == 'toggle') {
+                    this.subHUD = 0;
+                    if (document.getElementById('buildMenu').classList.contains('hide')) {
+                        this.building = true;
+                        this.move[0] = -1;
+                        document.getElementById('buildMenu').classList.add('show');
+                        document.getElementById('buildMenu').classList.remove('hide');
+                    } else if (document.getElementById('buildMenu').classList.contains('show')) {
+                        this.building = false;
+                        document.getElementById('buildMenu').classList.add('hide');
+                        document.getElementById('buildMenu').classList.remove('show');
+                    }
+                    this.passiveHUD();
+                } else if (typeof(e) == 'number') {
+                    this.move[1] = e;
+                    ws.send(JSON.stringify({
+                        type: 'build',
+                        id: this.id,
+                        build: e
+                    }));
+
+                } else if (e == 'close' && this.building === true) {
+                    if (document.getElementById('buildMenu').classList.contains('show')) {
+                        this.subHUD = 0;
+                        document.getElementById('buildMenu').classList.add('hide');
+                        document.getElementById('buildMenu').classList.remove('show');
+                    }
+                    this.building = false;
+                    this.move[1] = 0;
+                }
+            }
+        };
+        this.chat = function() {
+            if (this.chatting === false) {
+                this.chatting = true;
+            } else if (this.chatting === true) {
+                ws.send(JSON.stringify({
+                    type: 'chat',
+                    id: this.id,
+                    info: this.message
+                }));
+                this.message = '';
+                this.chatting = false;
+            }
+        };
+        this.passiveHUD = function() {
+            if (this.building == true) {
+                document.getElementById('buildMenu').classList.add('show');
+
+                if (this.subHUD == 0) {
+                    this.subHUD = keyStates[87] || keyStates[38] ? 1 : keyStates[68] || keyStates[39] ? 2 : keyStates[83] || keyStates[40] ? 3 : keyStates[65] || keyStates[37] ? 4 : 0;
+                    keyStates[37] = false;
+                    keyStates[38] = false;
+                    keyStates[39] = false;
+                    keyStates[40] = false;
+                    keyStates[87] = false;
+                    keyStates[83] = false;
+                    keyStates[65] = false;
+                    keyStates[67] = false;
+
+                }
+                for (var i = 0; i < document.getElementsByClassName('buildSection').length; i++) {
+                    document.getElementsByClassName('buildSection')[i].classList.add('hide');
+                    document.getElementsByClassName('buildSection')[i].classList.remove('show');
+                }
+                document.getElementsByClassName('buildSection')[this.subHUD].classList.add('show');
+                document.getElementsByClassName('buildSection')[this.subHUD].classList.remove('hide');
+
+                //Build walls
+                if (this.subHUD == 1) {
+
+                    if (keyStates[38] && this.readyBuild || keyStates[87] && this.readyBuild) {
+                        this.build(0);
+                        this.readyBuild = false;
+                    } else if (keyStates[39] && this.readyBuild || keyStates[68] && this.readyBuild) {
+                        this.build(1);
+                        this.readyBuild = false;
+                    } else if (keyStates[40] && this.readyBuild || keyStates[83] && this.readyBuild) {
+                        this.build(2);
+                        this.readyBuild = false;
+                    } else if (keyStates[37] && this.readyBuild || keyStates[65] && this.readyBuild) {
+                        this.build(3);
+                        this.readyBuild = false;
+                    } else {
+                        console.log('%c no builddddd', 'color:red');
+                        this.readyBuild = true;
+                    }
+
+                    if (this.stones[0] >= 10) {
+                        document.getElementsByClassName('rock1')[2].classList.add('canAfford');
+                        document.getElementsByClassName('rock1')[2].classList.remove('cannotAfford');
+                    } else if (this.stones[0] < 10) {
+                        document.getElementsByClassName('rock1')[2].classList.add('cannotAfford');
+                        document.getElementsByClassName('rock1')[2].classList.remove('canAfford');
+                    }
+                    if (this.stones[1] >= 5) {
+                        document.getElementsByClassName('rock2')[2].classList.add('canAfford');
+                        document.getElementsByClassName('rock2')[2].classList.remove('cannotAfford');
+                    } else if (this.stones[1] < 5) {
+                        document.getElementsByClassName('rock2')[2].classList.add('cannotAfford');
+                        document.getElementsByClassName('rock2')[2].classList.remove('canAfford');
+                    }
+                    if (this.stones[2] >= 3) {
+                        document.getElementsByClassName('rock3')[2].classList.add('canAfford');
+                        document.getElementsByClassName('rock3')[2].classList.remove('cannotAfford');
+                    } else if (this.stones[2] < 3) {
+                        document.getElementsByClassName('rock3')[2].classList.add('cannotAfford');
+                        document.getElementsByClassName('rock3')[2].classList.remove('canAfford');
+                    }
+                    if (this.stones[3] >= 1) {
+                        document.getElementsByClassName('rock4')[2].classList.add('canAfford');
+                        document.getElementsByClassName('rock4')[2].classList.remove('cannotAfford');
+                    } else if (this.stones[3] < 1) {
+                        document.getElementsByClassName('rock4')[2].classList.add('cannotAfford');
+                        document.getElementsByClassName('rock4')[2].classList.remove('canAfford');
+                    }
+                } else if (this.subHUD == 2) {} else if (this.subHUD == 3) {} else if (this.subHUD == 4) {}
+            }
+        };
+    };
+
+
+
+
+    function drawTimer() {
+        player.readyDraw = false;
+        ctx.clearRect(player.x - canvas.width / 2 + 25, player.y - canvas.height / 2 + 25, canvas.width, canvas.height);
+
+        ctx.setTransform(1, 0, 0, 1, -player.x - 25 + canvas.width / 2, -player.y - 25 + canvas.height / 2);
+
+        for (var i = player.viewStartGrid; i < player.viewEndGrid; i++) {
+            var a = i.toString().slice(-2);
+            var b = player.gridId.toString().slice(-2);
+            //Limit vertival render
+            if (b - a >= 0 && b - a <= Math.trunc(canvas.height / 100) || a - b >= 0 && a - b <= Math.trunc(canvas.height / 100)) {
+                draw(i);
+            }
+            if (i + 1 == player.viewEndGrid) {
+                player.readyDraw = true;
+            }
         }
-        else if (this.stones[0] < 10 && document.getElementById('wall1').classList.contains('canAfford')) {
-          document.getElementById('wall1').classList.add('cannotAfford');
-          document.getElementById('wall1').classList.remove('canAfford');
+    }
+
+
+
+
+    function draw(index) {
+        //Textured rocks
+        if (grids[index].rock) {
+            ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
+            if (grids[index].health < 40 && grids[index].health > 0) {
+                ctx.fillStyle = '#ff6666';
+                ctx.fillRect(grids[index].x + 5, grids[index].y + 22, 40, 8);
+                ctx.fillStyle = '#99ff66';
+                ctx.fillRect(grids[index].x + 5, grids[index].y + 22, grids[index].health, 8);
+            }
         }
-        if (this.stones[1] >= 5 && document.getElementById('wall2').classList.contains('cannotAfford')) {
-          document.getElementById('wall2').classList.add('canAfford');
-          document.getElementById('wall2').classList.remove('cannotAfford');
+        //Player path
+        else if (typeof grids[index].owner === 'number' || grids[index].occupied || grids[index].contesting) {
+            ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' + grids[index].rgb[2] + ', .75)';
+            ctx.fillRect(grids[index].x, grids[index].y, 50, 50);
         }
-        else if (this.stones[1] < 5 && document.getElementById('wall2').classList.contains('canAfford')) {
-          document.getElementById('wall2').classList.add('cannotAfford');
-          document.getElementById('wall2').classList.remove('canAfford');
+    }
+
+
+
+
+    //Stop repeat keys
+    var oneTimeBuild = false;
+
+    window.addEventListener('keydown', function(e) {
+        // e.preventDefault();
+
+        //Movement
+        if (e.keyCode >= 37 && e.keyCode <= 40 || e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 65 || e.keyCode == 68) {
+            keyStates[37] = false;
+            keyStates[38] = false;
+            keyStates[39] = false;
+            keyStates[40] = false;
+            keyStates[87] = false;
+            keyStates[83] = false;
+            keyStates[65] = false;
+            keyStates[67] = false;
+            keyStates[e.keyCode] = true;
+            player.passiveHUD();
         }
-        if (this.stones[2] >= 3 && document.getElementById('build3').classList.contains('cannotAfford')) {
-          document.getElementById('build3').classList.add('canAfford');
-          document.getElementById('build3').classList.remove('cannotAfford');
+        if (e.keyCode == 49) {
+            keyStates[49] = true;
+        } else if (e.keyCode == 27) {
+            player.message = '';
+            player.chatting = false;
+            player.build('close');
         }
-        else if (this.stones[2] < 3 && document.getElementById('build3').classList.contains('canAfford')) {
-          document.getElementById('build3').classList.add('cannotAfford');
-          document.getElementById('build3').classList.remove('canAfford');
+
+        //Chat
+        if (e.keyCode == 13 && player.chatting === false) {
+            keyStates[e.keyCode] = true;
+            player.chat();
+        } else if (e.keyCode == 13 && player.chatting === true) {
+            player.chat();
         }
-        if (this.stones[3] >= 1 && document.getElementById('build4').classList.contains('cannotAfford')) {
-          document.getElementById('build4').classList.add('canAfford');
-          document.getElementById('build4').classList.remove('cannotAfford');
+        if (player.chatting === true && e.keyCode != 13) {
+            if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32 || e.keyCode >= 186 && e.keyCode <= 222) {
+                if (player.message.length < 45) {
+                    player.message += e.key;
+                }
+            } else if (e.keyCode == 8) {
+                player.message = player.message.slice(0, -1);
+            }
         }
-        else if (this.stones[3] < 1 && document.getElementById('build4').classList.contains('canAfford')) {
-          document.getElementById('build4').classList.add('cannotAfford');
-          document.getElementById('build4').classList.remove('canAfford');
+
+        //Build menu
+        if (e.keyCode == 32 && oneTimeBuild === false && player.smoothMoving === false && player.chatting === false) {
+            player.build('toggle');
+            oneTimeBuild = true;
         }
-      }
-      else if (this.subHUD == 1) {
-        console.log('1');
-      }
-      else if (this.subHUD == 2) {
-        console.log('2');
-      }
-      else if (this.subHUD == 3) {
-        console.log('3');
-      }
-    }
 
-    //Bottom bar
-    if (document.getElementsByClassName('slotValue')[0].innerHTML != this.stones[0]) {
-      document.getElementsByClassName('slotValue')[0].innerHTML = this.stones[0];
-    }
-    if (document.getElementsByClassName('slotValue')[1].innerHTML != this.stones[1]) {
-      document.getElementsByClassName('slotValue')[1].innerHTML = this.stones[1]
-    }
-    if (document.getElementsByClassName('slotValue')[2].innerHTML != this.stones[2]) {
-      document.getElementsByClassName('slotValue')[2].innerHTML = this.stones[2];
-    }
-    if (document.getElementsByClassName('slotValue')[3].innerHTML != this.stones[3]) {
-      document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
-    }
+        player.updated = true;
+    });
 
-    //Chat instructions
-    if (this.chatting === true && document.getElementById('chatInstruction').classList.contains('hide')) {
-      document.getElementById('chatInstruction').classList.add('show');
-      document.getElementById('chatInstruction').classList.remove('hide');
-    }
-    else if (this.chatting === false && document.getElementById('chatInstruction').classList.contains('show')) {
-      document.getElementById('chatInstruction').classList.add('hide');
-      document.getElementById('chatInstruction').classList.remove('show');
-    }
-    if (this.chatting === true) {
-      document.getElementById('chatPreview').innerHTML = this.message;
-    }
-  };
-};
-
-
-
-
-
-
-
-
-
-function drawTimer() {
-  player.ready = false;
-  ctx.clearRect(player.x-canvas.width/2+25, player.y-canvas.height/2+25, canvas.width, canvas.height);
-
-  ctx.setTransform(1, 0, 0, 1, -player.x-25+canvas.width/2, -player.y-25+canvas.height/2);
-
-  for (var i=player.viewStartGrid; i<player.viewEndGrid; i++) {
-    var a = i.toString().slice(-2);
-    var b = player.gridId.toString().slice(-2);
-    //Limit vertival render
-    if (b-a>=0 && b-a <= Math.trunc(canvas.height/100) || a-b>=0 && a-b <= Math.trunc(canvas.height/100)) {
-      draw(i);
-    }
-    if (i+1 == player.viewEndGrid) {
-      player.ready = true;
-    }    
-  }
-}
-
-
-setInterval(function() {
-  var img = canvas.toDataURL();
-  img.crossOrigin = "Anonymous";
-  img.src = document.getElementById("minimap").value;
-}, 2000);
-
-
-
-
-
-
-
-
-
-
-function draw(index) {
-  //Textured rocks
-  if (grids[index].rock) {
-    ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
-    if (grids[index].health < 40 && grids[index].health > 0) {
-      ctx.fillStyle = '#ff6666';
-      ctx.fillRect(grids[index].x+5, grids[index].y+22, 40, 8);
-      ctx.fillStyle = '#99ff66';
-      ctx.fillRect(grids[index].x+5, grids[index].y+22, grids[index].health, 8);
-    }
-  }
-  //Player path
-  else if (typeof grids[index].owner === 'number') {
-    ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' +  grids[index].rgb[2] + ', .75)';
-    ctx.fillRect(grids[index].x, grids[index].y, 50, 50);
-  }
-}
-
-
-
-
-
-
-
-
-
-
-//Stop repeat keys
-var oneTimeBuild = false;
-
-window.addEventListener('keydown', function(e) {
-  // e.preventDefault();
-
-  //Movement
-  if (e.keyCode >= 37 && e.keyCode <= 40 || e.keyCode == 87 || e.keyCode == 83  || e.keyCode == 65  || e.keyCode == 68) {
-    keyStates[37] = false;
-    keyStates[38] = false;
-    keyStates[39] = false;
-    keyStates[40] = false;
-    keyStates[87] = false;
-    keyStates[83] = false;
-    keyStates[65] = false;
-    keyStates[67] = false;
-    keyStates[e.keyCode] = true;
-  }
-
-  if (e.keyCode == 49) {
-    keyStates[49] = true;
-  }
-  else if (e.keyCode == 27) {
-    player.message = '';
-    player.chatting = false;
-    player.build('close');
-  }
-
-  //Chat
-  if (e.keyCode == 13 && player.chatting === false) {
-    keyStates[e.keyCode] = true;
-    player.chat();
-  }
-  else if (e.keyCode == 13 && player.chatting === true) {
-    player.chat();
-  }
-  if (player.chatting === true && e.keyCode != 13) {
-    if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32 || e.keyCode >= 186 && e.keyCode <= 222) {
-      if (player.message.length < 45) {
-        player.message += e.key;
-      }
-    }
-    else if (e.keyCode == 8) {
-      player.message = player.message.slice(0, -1);
-    }
-  }
-
-  //Build menu
-  if (e.keyCode == 32 && oneTimeBuild === false && player.smoothMoving === false && player.chatting === false) {
-    player.build('toggle');
-    oneTimeBuild = true;
-  }
-
-  player.updated = true;
-});
-
-window.addEventListener('keyup', function(e) {
-  oneTimeBuild = false;
-  // e.preventDefault();
-  keyStates[e.keyCode] = false;
-  player.updated = true;
-});
-
-
-
-
-
-
-
-
-
-
-</script>
+    window.addEventListener('keyup', function(e) {
+        oneTimeBuild = false;
+        // e.preventDefault();
+        keyStates[e.keyCode] = false;
+        player.updated = true;
+    });
+    </script>
 </body>
+
 </html>
