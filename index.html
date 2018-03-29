@@ -82,15 +82,13 @@
     #buildMenu,
     #chatInstruction {
         position: absolute;
-        text-align: center;
         z-index: 10;
         top: 50%;
         left: 50%;
         transform: translate(-50%, 0);
         font-family: 'Shrikhand', cursive;
         font-weight: bold;
-        font-size: 14px;
-        font-weight: 300;
+        font-size: 15px;
     }
 
     .rock1,
@@ -98,7 +96,7 @@
     .rock3,
     .rock4,
     .buildSection {
-        border-radius: 10px;
+        text-align: center;
         position: absolute;
         width: 50px;
         height: 50px;
@@ -109,47 +107,79 @@
         -webkit-text-stroke-color: black;
         vertical-align: middle;
     }
+    /*    .buildTitle {
+        margin-top: 15px !important;
+    }
+*/
 
     .canAfford {
         color: #99ff66;
         background-color: #99ff66;
-        box-shadow: 0 0 20px 2px #99ff66;
+        /*        box-shadow: 0 0 20px 2px #99ff66;
+*/
         text-shadow: 0 0 10px #99ff66;
     }
 
     .cannotAfford {
         color: #ff6666;
         background-color: #ff6666;
-        box-shadow: 0 0 20px 2px #ff6666;
+        /*        box-shadow: 0 0 20px 2px #ff6666;
+*/
         text-shadow: 0 0 10px #ff6666;
     }
 
-    .stoneAmount {
-        margin-top: 5px !important;
-    }
-
     .rock1 {
+        width: 100px;
         top: -75px;
         left: -25px;
-        background-image: url('http://rtstextures.bitballoon.com/rock5.jpg');
+        background-position: 5px;
+        outline: 1px inset black;
+    }
+
+    .upgrade .rock1 {
+        width: 50px;
+        background-color: #ff6666;
     }
 
     .rock2 {
-        top: -25px;
+        height: 99px;
+        top: -24px;
         left: 25px;
-        background-image: url('http://rtstextures.bitballoon.com/rock6.jpg');
+        background-position: 5px 5px;
+        outline: 1px inset black;
+    }
+
+    .upgrade .rock3 {
+        width: 100px;
     }
 
     .rock3 {
+        width: 99px;
         top: 25px;
-        left: -25px;
-        background-image: url('http://rtstextures.bitballoon.com/rock7.jpg');
+        left: -75px;
+        background-position: 55px 5px;
+        outline: 1px inset black;
+    }
+
+    .rock3 .menuImageSection {
+        width: 49px;
     }
 
     .rock4 {
-        top: -25px;
+        height: 99px;
+        top: -75px;
         left: -75px;
-        background-image: url('http://rtstextures.bitballoon.com/rock8.jpg');
+        background-position: 5px 55px;
+        text-align: center;
+        outline: 1px inset black;
+    }
+
+    .upgrade .rock4 {
+        height: 99px;
+        top: -24px;
+        left: -75px;
+        background-position: 5px 5px;
+        outline: 1px inset black;
     }
 
     #chatInstruction {
@@ -177,15 +207,31 @@
         position: absolute;
     }
 
-    .buildTitle {
-        margin-top: 15px;
-    }
-
     .buildMain {
         background-color: gold;
         color: gold;
         box-shadow: 0 0 20px 2px gold;
         text-shadow: 0 0 10px gold;
+    }
+
+    .menuImageSection {
+        width: 50px;
+        height: 50px;
+        background-repeat: no-repeat;
+        background-position: 9px;
+        float: left;
+    }
+
+    .menuTextSection {
+        width: 50px;
+        height: 50px;
+        float: left;
+        display: table;
+    }
+
+    .buildTitle {
+        display: table-cell;
+        vertical-align: middle;
     }
     </style>
 </head>
@@ -220,91 +266,131 @@
             <p class="slotValue">0</p>
         </div>
     </div>
+    <img src="http://rtstextures.bitballoon.com/rock5.jpg" id="test">
     <div id="buildMenu" class="hide">
         <div class="buildSection" class="hide">
             <div class="rock1 buildMain">
-                <p class="buildTitle">Walls</p>
+                <img src="http://rtstextures.bitballoon.com/rock5.jpg">
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock5.jpg')"></div>
+                <div class="menuTextSection">
+                    <p class="buildTitle">Walls</p>
+                </div>
             </div>
             <div class="rock2 buildMain">
-                <p class="buildTitle">Turrets</p>
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock5.jpg')"></div>
+                <div class="menuTextSection">
+                    <p class="buildTitle">SOON</p>
+                </div>
             </div>
             <div class="rock3 buildMain">
-                <p class="buildTitle">Heal</p>
+                <div class="menuTextSection">
+                    <p class="buildTitle">SOON</p>
+                </div>
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock5.jpg')"></div>
             </div>
             <div class="rock4 buildMain">
-                <p class="buildTitle">Misc</p>
+                <div class="menuTextSection">
+                    <p class="buildTitle">SOON</p>
+                </div>
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock5.jpg')"></div>
             </div>
         </div>
-        <div class="buildSection" class="hide">
-            <div class="rock1" class="cannotAfford">
-                <p class="stoneAmount">10</p>
-                <p>DIRT</p>
+        <div class="buildSection">
+            <div class="rock1">
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock5.jpg')"></div>
+                <div class="menuTextSection">
+                    <p class="buildTitle">10
+                        <br> DIRT</p>
+                </div>
             </div>
-            <div class="rock2" class="cannotAfford">
-                <p class="stoneAmount">5</p>
-                <p>STONE</p>
+            <div class="rock2">
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock6.jpg')"></div>
+                <div class="menuTextSection">
+                    <p class="buildTitle">5
+                        <br> ROCK</p>
+                </div>
             </div>
-            <div class="rock3" class="cannotAfford">
-                <p class="stoneAmount">3</p>
-                <p>GOLD</p>
+            <div class="rock3">
+                <div class="menuTextSection">
+                    <p class="buildTitle">3
+                        <br> GOLD</p>
+                </div>
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock7.jpg')"></div>
             </div>
-            <div class="rock4" class="cannotAfford">
-                <p class="stoneAmount">1</p>
-                <p>DIAM</p>
+            <div class="rock4">
+                <div class="menuTextSection">
+                    <p class="buildTitle">1
+                        <br> DIAM</p>
+                </div>
+                <div class="menuImageSection" style="background-image: url('http://rtstextures.bitballoon.com/rock8.jpg')"></div>
             </div>
         </div>
-        <div class="buildSection" class="hide">
-            <div class="rock1" class="cannotAfford">
+        <div class="buildSection">
+            <div class="rock1">
                 <p class="stoneAmount">10</p>
                 <p>DIRT2</p>
             </div>
-            <div class="rock2" class="cannotAfford">
+            <div class="rock2">
                 <p class="stoneAmount">5</p>
                 <p>STONE</p>
             </div>
-            <div class="rock3" class="cannotAfford">
+            <div class="rock3">
                 <p class="stoneAmount">3</p>
                 <p>GOLD</p>
             </div>
-            <div class="rock4" class="cannotAfford">
+            <div class="rock4">
                 <p class="stoneAmount">1</p>
                 <p>DIAM</p>
             </div>
         </div>
-        <div class="buildSection" class="hide">
-            <div class="rock1" class="cannotAfford">
+        <div class="buildSection">
+            <div class="rock1">
                 <p class="stoneAmount">10</p>
                 <p>DIRT3</p>
             </div>
-            <div class="rock2" class="cannotAfford">
+            <div class="rock2">
                 <p class="stoneAmount">5</p>
                 <p>STONE</p>
             </div>
-            <div class="rock3" class="cannotAfford">
+            <div class="rock3">
                 <p class="stoneAmount">3</p>
                 <p>GOLD</p>
             </div>
-            <div class="rock4" class="cannotAfford">
+            <div class="rock4">
                 <p class="stoneAmount">1</p>
                 <p>DIAM</p>
             </div>
         </div>
-        <div class="buildSection" class="hide">
-            <div class="rock1" class="cannotAfford">
+        <div class="buildSection">
+            <div class="rock1">
                 <p class="stoneAmount">10</p>
                 <p>DIRT4</p>
             </div>
-            <div class="rock2" class="cannotAfford">
+            <div class="rock2">
                 <p class="stoneAmount">5</p>
                 <p>STONE</p>
             </div>
-            <div class="rock3" class="cannotAfford">
+            <div class="rock3">
                 <p class="stoneAmount">3</p>
                 <p>GOLD</p>
             </div>
-            <div class="rock4" class="cannotAfford">
+            <div class="rock4">
                 <p class="stoneAmount">1</p>
                 <p>DIAM</p>
+            </div>
+        </div>
+        <div class="buildSection upgrade">
+            <div class="rock1 cannotAfford">
+                <div class="menuTextSection">
+                    <p class="buildTitle" id="sell">SELL</p>
+                </div>
+            </div>
+            <div class="rock3 canAfford">
+                <div class="menuTextSection">
+                    <p class="buildTitle" id="upgradeText">5
+                        <br> ROCK</p>
+                </div>
+                <div id="upgrageImg" class="menuImageSection"></div>
             </div>
         </div>
     </div>
@@ -318,6 +404,7 @@
 
     //Online
     var ws = new WebSocket(HOST);
+    console.log('%c Please report any bugs/exploits to: jared.bledsoe@icloud.com', 'color: red; font-size: 150%; background-color: #e6e6e6; font-weight: bold; padding: 10px; border: 2px dashed red; border-radius: 25px;')
 
     var canvas = document.getElementById('game');
     canvas.width = window.innerWidth;
@@ -336,7 +423,8 @@
     var head = document.getElementById('head');
 
     var rocks = [document.getElementsByClassName('rock1')[0], document.getElementsByClassName('rock2')[0], document.getElementsByClassName('rock3')[0], document.getElementsByClassName('rock4')[0], document.getElementsByClassName('rock5')[0], document.getElementsByClassName('wall1')[0], document.getElementsByClassName('wall2')[0], document.getElementsByClassName('wall3')[0], document.getElementsByClassName('wall4')[0]];
-    // var walls = [];
+    var slots = [document.getElementsByClassName('rock1')[2], document.getElementsByClassName('rock2')[2], document.getElementsByClassName('rock3')[2], document.getElementsByClassName('rock4')[2]];
+    var slotCosts = [10, 5, 3, 1];
 
     var brick1 = document.getElementById('brick1');
 
@@ -345,25 +433,17 @@
     var crack3 = document.getElementById('crack3');
 
     var characters = /^[_A-z0-9]*((-|\s)*[_A-z0-9])*$/g;
-    // window.onunload = function () {
-    //  ws.send(JSON.stringify({
-    //      type: 'close',
-    //      id: player.id
-    //     }));
-    // };
 
 
 
     ws.onmessage = function(e) {
         var message = JSON.parse(e.data);
         if (message.type == 'gameUpdate') {
-            //Move viewport to center player
-            player.gridId = message.player.gridId;
-            player.smoothMoving = message.player.smoothMoving;
-            player.x = message.player.x;
-            player.y = message.player.y;
-            player.stones = message.player.stones;
-            player.health = message.player.health;
+            player.x = message.player[0];
+            player.y = message.player[1];
+            player.gridId = message.player[2];
+            player.smoothMoving = message.player[3];
+            player.stones = message.player[4];
 
             for (var i = 0; i < message.updatedGrids.length; i++) {
                 grids[message.updatedGrids[i].gridId] = message.updatedGrids[i];
@@ -383,6 +463,8 @@
                     ctx.drawImage(head, message.players[i][0] + 7, message.players[i][1] + 7, 36, 36);
                 }
             }
+        } else if (message.type == 'closeHUD') {
+            player.build('toggle');
         }
         //Player just joined
         else if (message.type == 'initPlayer') {
@@ -410,10 +492,7 @@
         this.updated = false;
         this.building = false;
         this.chatting = false;
-        this.health = 40;
         this.message = '';
-        this.buildGrids = [];
-        this.buildTab = false
         this.stones = [0, 0, 0, 0];
         this.viewStartGrid = 0;
         this.viewEndGrid = 0;
@@ -434,7 +513,7 @@
                 this.updated = false;
                 ws.send(JSON.stringify({
                     type: 'playerUpdate',
-                    info: this,
+                    move: this.move,
                     id: this.id
                 }));
             }
@@ -459,11 +538,6 @@
                 document.getElementsByClassName('slotValue')[3].innerHTML = this.stones[3];
             }
 
-            //Close menu
-            if (grids[this.gridId].rock >= 1000 && this.building) {
-                this.build('close');
-            }
-
             //Chat instructions
             if (this.chatting === true && document.getElementById('chatInstruction').classList.contains('hide')) {
                 document.getElementById('chatInstruction').classList.add('show');
@@ -486,10 +560,20 @@
                         document.getElementById('buildMenu').classList.add('show');
                         document.getElementById('buildMenu').classList.remove('hide');
                     } else if (document.getElementById('buildMenu').classList.contains('show')) {
-                        this.building = false;
                         document.getElementById('buildMenu').classList.add('hide');
                         document.getElementById('buildMenu').classList.remove('show');
+                        this.building = false;
+                        this.move[1] = 0;
                     }
+                    keyStates[37] = false;
+                    keyStates[38] = false;
+                    keyStates[39] = false;
+                    keyStates[40] = false;
+                    keyStates[87] = false;
+                    keyStates[83] = false;
+                    keyStates[65] = false;
+                    keyStates[68] = false;
+
                     this.passiveHUD();
                 } else if (typeof(e) == 'number') {
                     this.move[1] = e;
@@ -498,15 +582,6 @@
                         id: this.id,
                         build: e
                     }));
-
-                } else if (e == 'close' && this.building === true) {
-                    if (document.getElementById('buildMenu').classList.contains('show')) {
-                        this.subHUD = 0;
-                        document.getElementById('buildMenu').classList.add('hide');
-                        document.getElementById('buildMenu').classList.remove('show');
-                    }
-                    this.building = false;
-                    this.move[1] = 0;
                 }
             }
         };
@@ -528,16 +603,20 @@
                 document.getElementById('buildMenu').classList.add('show');
 
                 if (this.subHUD == 0) {
-                    this.subHUD = keyStates[87] || keyStates[38] ? 1 : keyStates[68] || keyStates[39] ? 2 : keyStates[83] || keyStates[40] ? 3 : keyStates[65] || keyStates[37] ? 4 : 0;
-                    keyStates[37] = false;
-                    keyStates[38] = false;
-                    keyStates[39] = false;
-                    keyStates[40] = false;
-                    keyStates[87] = false;
-                    keyStates[83] = false;
-                    keyStates[65] = false;
-                    keyStates[67] = false;
+                    if (grids[this.gridId].rock < 1000) {
+                        this.subHUD = keyStates[87] || keyStates[38] ? 1 : keyStates[68] || keyStates[39] ? 2 : keyStates[83] || keyStates[40] ? 3 : keyStates[65] || keyStates[37] ? 4 : 0;
+                    } else {
+                        this.subHUD = 5;
+                    }
+                } else {
+                    var buildDir = keyStates[38] || keyStates[87] ? 0 :
+                        keyStates[39] || keyStates[68] ? 1 :
+                        keyStates[40] || keyStates[83] ? 2 :
+                        keyStates[37] || keyStates[65] ? 3 : -1;
 
+                    if (buildDir >= 0) {
+                        this.build(buildDir);
+                    }
                 }
                 for (var i = 0; i < document.getElementsByClassName('buildSection').length; i++) {
                     document.getElementsByClassName('buildSection')[i].classList.add('hide');
@@ -546,55 +625,42 @@
                 document.getElementsByClassName('buildSection')[this.subHUD].classList.add('show');
                 document.getElementsByClassName('buildSection')[this.subHUD].classList.remove('hide');
 
+
                 //Build walls
                 if (this.subHUD == 1) {
+                    for (var i = 0; i < slots.length; i++) {
+                        if (this.stones[i] >= slotCosts[i]) {
+                            slots[i].classList.add('canAfford');
+                            slots[i].classList.remove('cannotAfford');
+                        } else {
+                            slots[i].classList.add('cannotAfford');
+                            slots[i].classList.remove('canAfford');
+                        }
+                    }
+                } else if (this.subHUD == 2) {
 
-                    if (keyStates[38] && this.readyBuild || keyStates[87] && this.readyBuild) {
-                        this.build(0);
-                        this.readyBuild = false;
-                    } else if (keyStates[39] && this.readyBuild || keyStates[68] && this.readyBuild) {
-                        this.build(1);
-                        this.readyBuild = false;
-                    } else if (keyStates[40] && this.readyBuild || keyStates[83] && this.readyBuild) {
-                        this.build(2);
-                        this.readyBuild = false;
-                    } else if (keyStates[37] && this.readyBuild || keyStates[65] && this.readyBuild) {
-                        this.build(3);
-                        this.readyBuild = false;
-                    } else {
-                        console.log('%c no builddddd', 'color:red');
-                        this.readyBuild = true;
-                    }
+                } else if (this.subHUD == 3) {
 
-                    if (this.stones[0] >= 10) {
-                        document.getElementsByClassName('rock1')[2].classList.add('canAfford');
-                        document.getElementsByClassName('rock1')[2].classList.remove('cannotAfford');
-                    } else if (this.stones[0] < 10) {
-                        document.getElementsByClassName('rock1')[2].classList.add('cannotAfford');
-                        document.getElementsByClassName('rock1')[2].classList.remove('canAfford');
-                    }
-                    if (this.stones[1] >= 5) {
-                        document.getElementsByClassName('rock2')[2].classList.add('canAfford');
-                        document.getElementsByClassName('rock2')[2].classList.remove('cannotAfford');
-                    } else if (this.stones[1] < 5) {
-                        document.getElementsByClassName('rock2')[2].classList.add('cannotAfford');
-                        document.getElementsByClassName('rock2')[2].classList.remove('canAfford');
-                    }
-                    if (this.stones[2] >= 3) {
-                        document.getElementsByClassName('rock3')[2].classList.add('canAfford');
-                        document.getElementsByClassName('rock3')[2].classList.remove('cannotAfford');
-                    } else if (this.stones[2] < 3) {
-                        document.getElementsByClassName('rock3')[2].classList.add('cannotAfford');
-                        document.getElementsByClassName('rock3')[2].classList.remove('canAfford');
-                    }
-                    if (this.stones[3] >= 1) {
-                        document.getElementsByClassName('rock4')[2].classList.add('canAfford');
-                        document.getElementsByClassName('rock4')[2].classList.remove('cannotAfford');
-                    } else if (this.stones[3] < 1) {
-                        document.getElementsByClassName('rock4')[2].classList.add('cannotAfford');
-                        document.getElementsByClassName('rock4')[2].classList.remove('canAfford');
-                    }
-                } else if (this.subHUD == 2) {} else if (this.subHUD == 3) {} else if (this.subHUD == 4) {}
+                } else if (this.subHUD == 4) {
+
+                } else if (this.subHUD == 5) {
+                    var cost = grids[player.gridId].rock == 1001 ? 5 :
+                        grids[player.gridId].rock == 1002 ? 3 :
+                        grids[player.gridId].rock == 1003 ? 1 : 'MAX <br> UPGRADE';
+
+                    var img = cost == 5 ? 'http://rtstextures.bitballoon.com/rock6.jpg)' :
+                        cost == 3 ? 'http://rtstextures.bitballoon.com/rock7.jpg)' :
+                        cost == 1 ? 'http://rtstextures.bitballoon.com/rock8.jpg)' : 0;
+                    document.getElementById('upgrageImg').style.backgroundImage = 'url('.concat(img);
+
+                    var text = cost == 5 ? 'STONE' :
+                        cost == 3 ? 'GOLD' :
+                        cost == 1 ? 'DIAM' : '';
+
+                    document.getElementById('upgradeText').innerHTML = cost + '<br>' + text;
+
+                    console.log(img);
+                }
             }
         };
     };
@@ -628,6 +694,14 @@
         //Textured rocks
         if (grids[index].rock) {
             ctx.drawImage(rocks[grids[index].image], grids[index].x, grids[index].y, 50, 50);
+            if (grids[index].owner == player.id) {
+                ctx.fillStyle = 'rgba(153, 255, 102, .15)';
+                ctx.fillRect(grids[index].x, grids[index].y, 50, 50);
+            } else if (typeof grids[index].owner === 'number') {
+                ctx.fillStyle = 'rgba(255, 102, 102, .15)';
+                ctx.fillRect(grids[index].x, grids[index].y, 50, 50);
+            }
+
             if (grids[index].health < 40 && grids[index].health > 0) {
                 ctx.fillStyle = '#ff6666';
                 ctx.fillRect(grids[index].x + 5, grids[index].y + 22, 40, 8);
@@ -637,7 +711,11 @@
         }
         //Player path
         else if (typeof grids[index].owner === 'number' || grids[index].occupied || grids[index].contesting) {
-            ctx.fillStyle = 'rgba(' + grids[index].rgb[0] + ',' + grids[index].rgb[1] + ',' + grids[index].rgb[2] + ', .75)';
+            if (grids[index].owner == player.id) {
+                ctx.fillStyle = 'rgba(153, 255, 102, .75)';
+            } else if (typeof grids[index].owner === 'number') {
+                ctx.fillStyle = 'rgba(255, 102, 102, .75)';
+            }
             ctx.fillRect(grids[index].x, grids[index].y, 50, 50);
         }
     }
@@ -649,27 +727,26 @@
     var oneTimeBuild = false;
 
     window.addEventListener('keydown', function(e) {
-        // e.preventDefault();
-
         //Movement
-        if (e.keyCode >= 37 && e.keyCode <= 40 || e.keyCode == 87 || e.keyCode == 83 || e.keyCode == 65 || e.keyCode == 68) {
-            keyStates[37] = false;
-            keyStates[38] = false;
-            keyStates[39] = false;
-            keyStates[40] = false;
-            keyStates[87] = false;
-            keyStates[83] = false;
-            keyStates[65] = false;
-            keyStates[67] = false;
-            keyStates[e.keyCode] = true;
-            player.passiveHUD();
-        }
-        if (e.keyCode == 49) {
-            keyStates[49] = true;
-        } else if (e.keyCode == 27) {
-            player.message = '';
-            player.chatting = false;
-            player.build('close');
+        switch (e.keyCode) {
+            case 37:
+            case 38:
+            case 39:
+            case 40:
+            case 87:
+            case 83:
+            case 65:
+            case 68:
+                keyStates[37] = false;
+                keyStates[38] = false;
+                keyStates[39] = false;
+                keyStates[40] = false;
+                keyStates[87] = false;
+                keyStates[83] = false;
+                keyStates[65] = false;
+                keyStates[67] = false;
+                keyStates[e.keyCode] = true;
+                player.passiveHUD();
         }
 
         //Chat
@@ -688,9 +765,8 @@
                 player.message = player.message.slice(0, -1);
             }
         }
-
         //Build menu
-        if (e.keyCode == 32 && oneTimeBuild === false && player.smoothMoving === false && player.chatting === false) {
+        else if (e.keyCode == 32 || e.keyCode == 27) {
             player.build('toggle');
             oneTimeBuild = true;
         }
@@ -700,7 +776,6 @@
 
     window.addEventListener('keyup', function(e) {
         oneTimeBuild = false;
-        // e.preventDefault();
         keyStates[e.keyCode] = false;
         player.updated = true;
     });

@@ -89,45 +89,63 @@ wss.on('connection', function(ws) {
             //Player moved
             if (message.type == 'playerUpdate') {
                 if (players[currentId]) {
-                    players[currentId].move = message.info.move;
+                    players[currentId].move = message.move;
                 }
             }
-
-            //Player sent message
-            // else if (message.type == 'build') {
-            //     grids[message.info[0]].reset();
-            // }
-
             //Player sent message
             else if (message.type == 'chat') {
                 players[currentId].chat(message.info);
             }
-
             //Player build
-            else if (message.type == 'build') {
-                var cost = message.build == 0 ? 10 :
-                    message.build == 1 ? 5 :
-                    message.build == 2 ? 3 :
-                    message.build == 3 ? 1 : 0;
+            else if (message.type == 'build' && grids[players[currentId].gridId].owner == players[currentId].id) {
+                if (grids[players[currentId].gridId].rock < 1000) {
+                    var cost = message.build == 0 ? 10 :
+                        message.build == 1 ? 5 :
+                        message.build == 2 ? 3 :
+                        message.build == 3 ? 1 : 0;
+                } else if (message.build == 2 && grids[players[currentId].gridId].rock < 1004) {
+                    var cost = grids[players[currentId].gridId].rock == 1001 ? 5 :
+                        grids[players[currentId].gridId].rock == 1002 ? 3 :
+                        grids[players[currentId].gridId].rock == 1003 ? 1 : 0;
+                } else if (message.build == 0 && grids[players[currentId].gridId].rock >= 1000) {
+                    var cost = grids[players[currentId].gridId].rock == 1001 ? 5 :
+                        grids[players[currentId].gridId].rock == 1002 ? 3 :
+                        grids[players[currentId].gridId].rock == 1003 ? 2 : 0;
 
-                console.log(message.build);
+                    var slot = grids[players[currentId].gridId].rock == 1001 ? 0 :
+                        grids[players[currentId].gridId].rock == 1002 ? 1 :
+                        grids[players[currentId].gridId].rock == 1003 ? 2 :
+                        grids[players[currentId].gridId].rock == 1004 ? 3 : 4;
 
-                if (grids[players[currentId].gridId].owner == players[currentId].id &&
-                    grids[players[currentId].gridId].rock < 1000) {
-                    var slot = cost == 10 ? 0 :
-                        cost == 5 ? 1 :
-                        cost == 3 ? 2 :
-                        cost == 1 ? 3 : 0;
 
-                    if (players[currentId].stones[slot] >= cost) {
-                        var wall = cost == 10 ? 1001 :
-                            cost == 5 ? 1002 :
-                            cost == 3 ? 1003 :
-                            cost == 1 ? 1004 : 0;
+                    players[currentId].stones[slot] += cost;
+                    cost = 0;
 
-                        players[currentId].stones[slot] -= cost;
-                        grids[players[currentId].gridId].reset(wall);
-                    }
+                    grids[players[currentId].gridId].rock = 0;
+                    updatedGrids.push(grids[players[currentId].gridId]);
+
+                    clients[currentId].send(JSON.stringify({
+                        type: 'closeHUD'
+                    }));
+                }
+
+                var slot = cost == 10 ? 0 :
+                    cost == 5 ? 1 :
+                    cost == 3 ? 2 :
+                    cost == 1 ? 3 : 0;
+
+                if (players[currentId].stones[slot] >= cost && cost) {
+                    var wall = cost == 10 ? 1001 :
+                        cost == 5 ? 1002 :
+                        cost == 3 ? 1003 :
+                        cost == 1 ? 1004 : 0;
+
+                    players[currentId].stones[slot] -= cost;
+                    grids[players[currentId].gridId].reset(wall, players[currentId].id);
+
+                    clients[currentId].send(JSON.stringify({
+                        type: 'closeHUD'
+                    }));
                 }
             }
 
@@ -199,9 +217,11 @@ setInterval(function() {
         for (var i = 0; i < players.length; i++) {
             players[i].update();
 
+            var minimizedPlayer = [players[i].x, players[i].y, players[i].gridId, players[i].smoothMoving, players[i].stones];
+
             clients[i].send(JSON.stringify({
                 type: 'gameUpdate',
-                player: players[i],
+                player: minimizedPlayer,
                 updatedGrids: updatedGrids,
                 players: minimizedPlayers
             }));
@@ -224,7 +244,6 @@ setInterval(function() {
 
 function Player(x, y, gridId) {
     this.stuff = false;
-    this.health = 40;
     this.x = x;
     this.y = y;
     this.id = Math.random();
@@ -250,7 +269,7 @@ Player.prototype.update = function() {
                 this.move[0] == 2 ? 1 :
                 this.move[0] == 3 ? -100 : 0;
 
-            if (grids[this.gridId + dir].rock <= 990) {
+            if (grids[this.gridId + dir].rock <= 990 || grids[this.gridId + dir].owner == this.id) {
                 grids[this.gridId + dir].own(index, this.id);
                 this.contesting = true;
                 this.smooth = dir;
@@ -332,51 +351,57 @@ Grid.prototype.own = function(index, id) {
             this.owner = true;
         }
 
-        var smoothCamera = setInterval(() => {
-            try {
-                if (Math.abs(players[index].x - this.x) <= 0 && Math.abs(players[index].y - this.y) <= 0) {
-                    clearInterval(smoothCamera);
+        try {
+            var smoothCamera = setInterval(() => {
+                try {
+                    if (Math.abs(players[index].x - this.x) <= 0 && Math.abs(players[index].y - this.y) <= 0) {
+                        clearInterval(smoothCamera);
 
-                    var slot = this.rock <= 750 ? 0 :
-                        this.rock <= 950 ? 1 :
-                        this.rock <= 980 ? 2 :
-                        this.rock <= 990 ? 3 : 0;
-                    players[index].stones[slot]++;
+                        if (this.owner !== id) {
+                            var slot = this.rock <= 750 ? 0 :
+                                this.rock <= 950 ? 1 :
+                                this.rock <= 980 ? 2 :
+                                this.rock <= 990 ? 3 : 0;
+                            players[index].stones[slot]++;
 
-                    if (this.owner !== id) {
-                        this.rock = 0;
-                        this.owner = id;
-                        this.rgb = players[index].rgb;
-                        this.delay = 200;
+                            this.rock = 0;
+                            this.owner = id;
+                            this.rgb = players[index].rgb;
+                            this.delay = 200;
+                        }
+
+                        this.occupied = true;
+                        grids[players[index].lastGridId].occupied = false;
+
+                        players[index].smoothMoving = false;
+                        players[index].gridId = this.gridId;
+                        players[index].x = this.x;
+                        players[index].y = this.y;
+                        players[index].contesting = false;
+                        players[index].smooth = null;
+
+                        updatedGrids.push(grids[players[index].lastGridId]);
+                        players[index].lastGridId = this.gridId;
+                        updatedGrids.push(this);
                     }
-
-                    this.occupied = true;
-                    grids[players[index].lastGridId].occupied = false;
-
-                    players[index].smoothMoving = false;
-                    players[index].gridId = this.gridId;
-                    players[index].x = this.x;
-                    players[index].y = this.y;
-                    players[index].contesting = false;
-                    players[index].smooth = null;
-
-                    updatedGrids.push(grids[players[index].lastGridId]);
-                    players[index].lastGridId = this.gridId;
-                    updatedGrids.push(this);
+                    if (players[index].smooth === -1) {
+                        players[index].y -= 1;
+                    } else if (players[index].smooth === 100) {
+                        players[index].x += 1;
+                    } else if (players[index].smooth === 1) {
+                        players[index].y += 1;
+                    } else if (players[index].smooth === -100) {
+                        players[index].x -= 1;
+                    }
+                } catch (e) {
+                    clearInterval(smoothCamera);
+                    console.log(e);
                 }
-                if (players[index].smooth === -1) {
-                    players[index].y -= 1;
-                } else if (players[index].smooth === 100) {
-                    players[index].x += 1;
-                } else if (players[index].smooth === 1) {
-                    players[index].y += 1;
-                } else if (players[index].smooth === -100) {
-                    players[index].x -= 1;
-                }
-            } catch (e) {
-                console.log(e);
-            }
-        }, this.delay / 50);
+            }, this.delay / 50);
+        } catch (e) {
+            console.log(e);
+        }
+
     } catch (e) {
         console.log(e);
     }
@@ -423,21 +448,24 @@ Grid.prototype.heal = function(damage) {
         }, 1000);
     }, 2100);
 };
-Grid.prototype.reset = function(rock) {
+Grid.prototype.reset = function(rock, id) {
     try {
-        this.owner = false;
+        this.owner = id ? id : false;
         this.gridId = this.y / 50 + (this.x / 50 * 100);
         this.rgb;
         this.occupied = false;
         this.rock = rock ? rock : Math.floor((Math.random() * 1000) + 1);
-        this.delay;
         this.cracks = 0;
 
-        this.rock <= 750 ? this.delay = 300 :
-            this.rock <= 950 ? this.delay = 600 :
-            this.rock <= 980 ? this.delay = 900 :
-            this.rock <= 990 ? this.delay = 2100 :
-            this.rock <= 1000 ? this.delay = 0 : this.delay = 0;
+        if (!id) {
+            this.rock <= 750 ? this.delay = 300 :
+                this.rock <= 950 ? this.delay = 600 :
+                this.rock <= 980 ? this.delay = 900 :
+                this.rock <= 990 ? this.delay = 2100 :
+                this.rock <= 1000 ? this.delay = 0 : this.delay = 0;
+        } else if (id) {
+            this.delay = 200;
+        }
 
         this.rock <= 750 ? this.image = 0 :
             this.rock <= 950 ? this.image = 1 :
