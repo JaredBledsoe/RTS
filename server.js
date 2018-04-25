@@ -254,7 +254,7 @@ function Player(x, y, gridId) {
     this.rgb = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)];
     this.contesting = false;
     this.smooth = null;
-    this.stones = [0, 0, 0, 0];
+    this.stones = [666, 777, 888, 999];
     this.smoothMoving = false;
     this.message;
 };
