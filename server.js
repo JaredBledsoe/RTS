@@ -98,49 +98,29 @@ wss.on('connection', function(ws) {
             }
             //Player build
             else if (message.type == 'build' && grids[players[currentId].gridId].owner == players[currentId].id) {
-                if (grids[players[currentId].gridId].rock < 1000) {
-                    var cost = message.build == 0 ? 10 :
-                        message.build == 1 ? 5 :
-                        message.build == 2 ? 3 :
-                        message.build == 3 ? 1 : 0;
-                } else if (message.build == 2 && grids[players[currentId].gridId].rock < 1004) {
-                    var cost = grids[players[currentId].gridId].rock == 1001 ? 5 :
-                        grids[players[currentId].gridId].rock == 1002 ? 3 :
-                        grids[players[currentId].gridId].rock == 1003 ? 1 : 0;
-                } else if (message.build == 0 && grids[players[currentId].gridId].rock >= 1000) {
-                    var cost = grids[players[currentId].gridId].rock == 1001 ? 5 :
-                        grids[players[currentId].gridId].rock == 1002 ? 3 :
-                        grids[players[currentId].gridId].rock == 1003 ? 2 : 0;
+                //[Cost, Slot]
+                var cost = message.build == 0 || message.build == 4 && grids[players[currentId].gridId].rock < 1000 ? [10, 0] :
+                    message.build == 1 || message.build == 5 && grids[players[currentId].gridId].rock < 1000 ? [5, 1] :
+                    message.build == 2 || message.build == 6 && grids[players[currentId].gridId].rock < 1000 ? [3, 2] :
+                    message.build == 3 || message.build == 7 && grids[players[currentId].gridId].rock < 1000 ? [1, 3] :
+                    message.build == 18 && grids[players[currentId].gridId].rock == 1001 ? [5, 1] :
+                    message.build == 18 && grids[players[currentId].gridId].rock == 1002 ? [3, 2] :
+                    message.build == 18 && grids[players[currentId].gridId].rock == 1003 ? [1, 3] :
+                    message.build == 16 && grids[players[currentId].gridId].rock == 1001 ? [-5, 0] :
+                    message.build == 16 && grids[players[currentId].gridId].rock == 1002 ? [-2, 1] :
+                    message.build == 16 && grids[players[currentId].gridId].rock == 1003 ? [-1, 2] :
+                    message.build == 16 && grids[players[currentId].gridId].rock == 1004 ? [0, 3] : 0;
 
-                    var slot = grids[players[currentId].gridId].rock == 1001 ? 0 :
-                        grids[players[currentId].gridId].rock == 1002 ? 1 :
-                        grids[players[currentId].gridId].rock == 1003 ? 2 :
-                        grids[players[currentId].gridId].rock == 1004 ? 3 : 4;
+                if (players[currentId].stones[cost[1]] >= cost[0] && cost[0] !== undefined) {
+                    var wall = message.build == 0 ? 1001 :
+                        message.build == 1 ? 1002 :
+                        message.build == 2 ? 1003 :
+                        message.build == 3 ? 1004 :
+                        message.build == 18 && grids[players[currentId].gridId].rock == 1001 ? 1002 :
+                        message.build == 18 && grids[players[currentId].gridId].rock == 1002 ? 1003 :
+                        message.build == 18 && grids[players[currentId].gridId].rock == 1003 ? 1004 : 0;
 
-
-                    players[currentId].stones[slot] += cost;
-                    cost = 0;
-
-                    grids[players[currentId].gridId].rock = 0;
-                    updatedGrids.push(grids[players[currentId].gridId]);
-
-                    clients[currentId].send(JSON.stringify({
-                        type: 'closeHUD'
-                    }));
-                }
-
-                var slot = cost == 10 ? 0 :
-                    cost == 5 ? 1 :
-                    cost == 3 ? 2 :
-                    cost == 1 ? 3 : 0;
-
-                if (players[currentId].stones[slot] >= cost && cost) {
-                    var wall = cost == 10 ? 1001 :
-                        cost == 5 ? 1002 :
-                        cost == 3 ? 1003 :
-                        cost == 1 ? 1004 : 0;
-
-                    players[currentId].stones[slot] -= cost;
+                    players[currentId].stones[cost[1]] -= cost[0];
                     grids[players[currentId].gridId].reset(wall, players[currentId].id);
 
                     clients[currentId].send(JSON.stringify({
@@ -241,12 +221,11 @@ setInterval(function() {
 
 
 
-
 function Player(x, y, gridId) {
     this.stuff = false;
     this.x = x;
     this.y = y;
-    this.id = Math.random();
+    this.id = Math.round(Math.random() * 100000);
     this.gridId = gridId;
     this.baseGrid = gridId;
     this.lastGridId = gridId;
@@ -254,9 +233,9 @@ function Player(x, y, gridId) {
     this.rgb = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)];
     this.contesting = false;
     this.smooth = null;
-    this.stones = [666, 777, 888, 999];
+    this.stones = [10, 10, 10, 10];
     this.smoothMoving = false;
-    this.message;
+    this.message = [];
 };
 Player.prototype.update = function() {
     var index = players.indexOf(this);
@@ -286,11 +265,13 @@ Player.prototype.update = function() {
 };
 Player.prototype.chat = function(message) {
     try {
-        if (!this.message) {
-            this.message = message.length > 45 ? this.message = 'Wow this is a really cool game!' : message;
+        if (!this.message[0] && this.message.length <= 2 || !this.message[1] && this.message.length <= 2) {
+            message.length > 45 ? this.message.push('Wow this is a really cool game!') : this.message.push(message);
 
-            var hide = setTimeout(() => {
-                this.message = '';
+            setTimeout(() => {
+                console.log(this.message);
+                this.message.splice(0, 1);
+                console.log(this.message);
             }, 4500);
         }
     } catch (e) {
@@ -320,7 +301,6 @@ function Grid(x, y) {
     this.image;
     this.message;
     this.delay;
-    this.cracks = 0;
     this.building = false;
     this.health = 40;
 
@@ -454,8 +434,9 @@ Grid.prototype.reset = function(rock, id) {
         this.gridId = this.y / 50 + (this.x / 50 * 100);
         this.rgb;
         this.occupied = false;
-        this.rock = rock ? rock : Math.floor((Math.random() * 1000) + 1);
-        this.cracks = 0;
+        this.rock = rock !== undefined ? rock : Math.floor((Math.random() * 1000) + 1);
+
+        console.log(rock + ' ' + id);
 
         if (!id) {
             this.rock <= 750 ? this.delay = 300 :
@@ -475,7 +456,8 @@ Grid.prototype.reset = function(rock, id) {
             this.rock == 1001 ? this.image = 5 :
             this.rock == 1002 ? this.image = 6 :
             this.rock == 1003 ? this.image = 7 :
-            this.rock == 1004 ? this.image = 8 : 0;
+            this.rock == 1004 ? this.image = 8 :
+            this.rock == 1005 ? this.image = 9 : 0;
 
         this.health = 40;
 
